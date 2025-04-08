@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import closedEyes from "../assets/closed-eyes.jpg"
 import {
   FaFileAlt,
   FaBalanceScale,
@@ -172,8 +173,8 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.img
-            src="https://images.unsplash.com/photo-1600674649037-59c7e0f0ed6c"
-            alt="Legal AI"
+            src={closedEyes}
+            alt="Legal Tech Hero"
             className="rounded-3xl shadow-2xl w-full h-auto object-cover"
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -191,17 +192,17 @@ export default function LandingPage() {
         <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
           {[
             {
-              name: "Ananya Sharma",
+              name: "Nitish Yadav",
               comment:
                 "LexiVerse helped me file a complaint within minutes. It’s a must-have tool!",
             },
             {
-              name: "Adv. Rahul Menon",
+              name: "Ravi Teja",
               comment:
                 "As a lawyer, LexiVerse saves me hours of drafting time.",
             },
             {
-              name: "Priya Dutta",
+              name: "Ranjith Achary",
               comment:
                 "Understanding my rights has never been easier—thank you LexiVerse!",
             },
