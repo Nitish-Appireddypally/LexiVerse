@@ -7,15 +7,15 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-// Middleware
-const corsOptions = {
-  origin: "*", // or specific origin like 'http://localhost:5173'
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-};
+// CORS Middleware
+app.use(cors());
+app.use(express.json());
 
-app.use(cors(corsOptions));
-app.use(express.json()); // Allow JSON
+// Logger middleware — log every request
+app.use((req, res, next) => {
+  console.log(`[${req.method}] ${req.url}`);
+  next();
+});
 
 // Test route
 app.get("/", (req, res) => {
@@ -25,17 +25,13 @@ app.get("/", (req, res) => {
 // Auth routes
 app.use("/api/auth", authRoutes);
 
-// 404 fallback
+// Fallback - 404 Not Found (keep at the bottom)
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-app.use((req, res, next) => {
-  console.log(`[${req.method}] ${req.url}`);
-  next();
-});
-
-const PORT = process.env.PORT || 5000;
+// Start server
+const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
