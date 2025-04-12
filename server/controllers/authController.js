@@ -60,7 +60,7 @@
 
 const jwt = require('jsonwebtoken');
 // const bcrypt = require('bcryptjs');
-const {getUserByEmail} = require('../models/userModel');
+const {getUserByEmail, createUser} = require('../models/userModel');
 
 const loginUser = async (req, res) =>{
   const {email, password}=req.body;
@@ -86,6 +86,34 @@ const loginUser = async (req, res) =>{
     res.status(500).send('Server Error');
   }
 
+};
+
+const signupUser = async (req,res) => {
+  const {name, email, password, role}= req.body;
+  try{
+    const existingUser = await getUserByEmail(email);
+    if (existingUser) return res.status(400).json({ message: "User already exists" });
+
+    const newUser = await createUser({name, email, password, role});
+    const token = jwt.sign(
+      {id : newUser.id, email: newUser.email},
+      process.env.JWT_SECRET,
+      {expiresIn: '1h'}
+    );
+    res.status(201).json({
+      token,
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.id,
+        role: newUser.role
+      }
+    })
+  }
+  catch(error){
+    console.error("Register Error:", err.message);
+    res.status(500).send("Server Error");
+  }
 }
 
-module.exports = {loginUser};
+module.exports = {loginUser, signupUser};
