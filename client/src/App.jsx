@@ -35,6 +35,8 @@ import Signup from "./components/Auth/Signup";
 // Dashboard Home
 import DashboardHome from "./components/Dashboard/DashboardHome";
 import ChatbotPage from "./components/chatBotPage";
+import AdminDashboard from "./components/Dashboard/AdminDashboard";
+import UserDashboard from "./components/Dashboard/UserDashboard";
 
 function App() {
   return (
@@ -47,7 +49,10 @@ function App() {
 
         {/* Dashboard Entry Point */}
         <Route path="/dashboard" element={<DashboardHome />} />
+
         <Route path="/chatbot" element={<ChatbotPage />} />
+        <Route path="/user/dashboard" element={<UserDashboard />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );

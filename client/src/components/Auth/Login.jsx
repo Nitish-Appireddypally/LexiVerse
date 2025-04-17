@@ -25,8 +25,20 @@ const Login = () => {
       const {token, user} = response.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
+      console.log(user.role);
       console.log(user);
-      navigate("/dashboard");
+      
+      // navigate("/dashboard");
+      if (user.role === "admin") {
+        console.log("Redirecting to admin dashboard");
+        navigate("/admin/dashboard");
+      } else if (user.role === "user" || user.role === "client") {
+        console.log("Redirecting to user/client dashboard");
+        navigate("/user/dashboard");
+      } else {
+        console.log("Redirecting to unauthorized");
+        navigate("/unauthorized"); // fallback
+      }
 
     }
     catch(error){
