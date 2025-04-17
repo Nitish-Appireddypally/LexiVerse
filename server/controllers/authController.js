@@ -75,11 +75,11 @@ const loginUser = async (req, res) =>{
     if (!isMatch) return res.status(401).json({message: 'Invalid credentails'});
 
     const token = jwt.sign(
-      { id: user.id, email: user.email},
+      { id: user.id, email: user.email, role: user.role},
       process.env.JWT_SECRET,
       { expiresIn: '1h'}
     );
-    res.json({token, user:{id: user.id, name: user.name, email: user.email}});
+    res.json({token, user:{id: user.id, name: user.name, email: user.email, role: user.role}});
   }
   catch(err){
     console.log(err.message);
@@ -89,14 +89,14 @@ const loginUser = async (req, res) =>{
 };
 
 const signupUser = async (req,res) => {
-  const {name, email, password, role}= req.body;
+  const {name, email, password, role }= req.body;
   try{
     const existingUser = await getUserByEmail(email);
     if (existingUser) return res.status(400).json({ message: "User already exists" });
 
     const newUser = await createUser({name, email, password, role});
     const token = jwt.sign(
-      {id : newUser.id, email: newUser.email},
+      {id : newUser.id, email: newUser.email, role: newUser.role},
       process.env.JWT_SECRET,
       {expiresIn: '1h'}
     );
@@ -105,7 +105,7 @@ const signupUser = async (req,res) => {
       user: {
         id: newUser.id,
         name: newUser.name,
-        email: newUser.id,
+        email: newUser.email,
         role: newUser.role
       }
     })
