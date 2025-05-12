@@ -37,10 +37,19 @@ import DashboardHome from "./components/Dashboard/DashboardHome";
 import ChatbotPage from "./components/chatBotPage";
 import AdminDashboard from "./components/Dashboard/AdminDashboard";
 import UserDashboard from "./components/Dashboard/UserDashboard";
+import UploadCasePage from "./pages/UploadCasePage";
+import SubmissionSuccess from "./components/FileCase/SubmissionSuccess";
+
+// Toast Notifications
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
     <BrowserRouter>
+      {/* ToastContainer will be globally available */}
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable />
+
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
@@ -53,9 +62,12 @@ function App() {
         <Route path="/chatbot" element={<ChatbotPage />} />
         <Route path="/user/dashboard" element={<UserDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/upload-case" element={<UploadCasePage />} />
+        <Route path="/submission-success" element={<SubmissionSuccess />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
 export default App;
+
