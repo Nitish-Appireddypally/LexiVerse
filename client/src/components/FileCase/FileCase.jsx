@@ -54,8 +54,8 @@ const FileCase = () => {
   };
 
   return (
-    <div className="bg-slate-900 text-white  p-6 rounded-2xl shadow-lg max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold text-yellow-400 mb-6">File a Case</h1>
+    <div className="p-6 mx-auto">
+      <h1 className="text-3xl font-bold text-black mb-6">Follow the steps</h1>
       <StepProgressBar currentStep={currentStep} totalSteps={totalSteps} />
       <div className="mt-6">
         {renderStep()}

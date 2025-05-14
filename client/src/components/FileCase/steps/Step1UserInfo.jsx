@@ -30,39 +30,39 @@ const Step1UserInfo = ({ data, update, onNext }) => {
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm mb-1 text-yellow-400">Full Name</label>
+        <label className="block text-sm mb-1">Full Name</label>
         <input
           type="text"
           name="name"
           value={userInfo.name}
           onChange={handleChange}
-          className="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          className="w-full p-3 rounded-xl  border border-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
         />
       </div>
       <div>
-        <label className="block text-sm mb-1 text-yellow-400">Email</label>
+        <label className="block text-sm mb-1 ">Email</label>
         <input
           type="email"
           name="email"
           value={userInfo.email}
           onChange={handleChange}
-          className="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          className="w-full p-3 rounded-xl  border border-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
         />
       </div>
       <div>
-        <label className="block text-sm mb-1 text-yellow-400">Phone Number</label>
+        <label className="block text-sm mb-1 ">Phone Number</label>
         <input
           type="text"
           name="phone"
           value={userInfo.phone}
           onChange={handleChange}
-          className="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          className="w-full p-3 rounded-xl  border border-black focus:outline-none focus:ring-2 focus:ring-yellow-400"
         />
       </div>
       <div className="text-right">
         <button
           onClick={handleNext}
-          className="px-6 py-3 bg-yellow-400 text-black font-semibold rounded-xl hover:bg-yellow-300 transition"
+          className="px-6 py-3 bg-[#FBBF24] text-black font-semibold rounded-xl hover:bg-yellow-300 transition"
         >
           Next
         </button>

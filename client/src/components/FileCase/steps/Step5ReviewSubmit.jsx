@@ -43,30 +43,30 @@ const Step5ReviewSubmit = ({ data, onBack, onSubmit }) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-bold text-yellow-400">Review Your Case</h2>
+      <h2 className="text-xl font-bold text-red-600">Review Your Case</h2>
 
-      <section className="bg-slate-800 p-4 rounded-xl border border-slate-600 space-y-4">
+      <section className=" p-4 rounded-xl border border-slate-600 space-y-4">
         <div>
-          <h3 className="text-yellow-300 font-medium mb-1">👤 User Info</h3>
+          <h3 className="text-red-600 font-medium mb-1">👤 User Info</h3>
           <p><b>Name:</b> {userInfo.name}</p>
           <p><b>Email:</b> {userInfo.email}</p>
           <p><b>Phone:</b> {userInfo.phone}</p>
         </div>
 
         <div>
-          <h3 className="text-yellow-300 font-medium mb-1">📂 Case Type</h3>
+          <h3 className="text-red-600 font-medium mb-1">📂 Case Type</h3>
           <p>{caseType}</p>
         </div>
 
         <div>
-          <h3 className="text-yellow-300 font-medium mb-1">📝 Case Details</h3>
+          <h3 className="text-red-600 font-medium mb-1">📝 Case Details</h3>
           <p><b>Summary:</b> {caseDetails.summary}</p>
           <p><b>Incident:</b> {caseDetails.incident}</p>
           {caseDetails.notes && <p><b>Notes:</b> {caseDetails.notes}</p>}
         </div>
 
         <div>
-          <h3 className="text-yellow-300 font-medium mb-1">📎 Evidence Files</h3>
+          <h3 className="text-red-600 font-medium mb-1">📎 Evidence Files</h3>
           {evidenceFiles && evidenceFiles.length > 0 ? (
             <ul className="list-disc list-inside text-sm text-gray-300">
               {evidenceFiles.map((file, idx) => (
