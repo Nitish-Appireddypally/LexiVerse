@@ -23,34 +23,34 @@ const Step3CaseDetails = ({ data, update, onNext, onBack }) => {
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm mb-1 text-yellow-400">Case Summary <span className="text-red-400">*</span></label>
+        <label className="block text-sm mb-1 text-black">Case Summary <span className="text-red-400">*</span></label>
         <textarea
           rows={3}
           value={caseSummary}
           onChange={(e) => setCaseSummary(e.target.value)}
-          className="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          className="w-full p-3 rounded-xl border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
           placeholder="Brief summary of the case (1-2 lines)"
         />
       </div>
 
       <div>
-        <label className="block text-sm mb-1 text-yellow-400">Incident Details <span className="text-red-400">*</span></label>
+        <label className="block text-sm mb-1 text-black">Incident Details <span className="text-red-400">*</span></label>
         <textarea
           rows={6}
           value={incidentDetails}
           onChange={(e) => setIncidentDetails(e.target.value)}
-          className="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+          className="w-full p-3 rounded-xl border border-slate-600 focus:outline-none focus:ring-2 focus:ring-yellow-400"
           placeholder="Describe what happened, when and where it occurred, involved parties, etc."
         />
       </div>
 
       <div>
-        <label className="block text-sm mb-1 text-yellow-400">Additional Notes (Optional)</label>
+        <label className="block text-sm mb-1 text-black">Additional Notes (Optional)</label>
         <textarea
           rows={3}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          className="w-full p-3 rounded-xl bg-slate-800 text-white border border-slate-600 focus:outline-none focus:ring-yellow-400"
+          className="w-full p-3 rounded-xl  border border-slate-600 focus:outline-none focus:ring-yellow-400"
           placeholder="Any extra context you’d like to add..."
         />
       </div>

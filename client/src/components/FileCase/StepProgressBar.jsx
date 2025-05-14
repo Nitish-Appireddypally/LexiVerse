@@ -9,7 +9,7 @@ const StepProgressBar = ({ currentStep, totalSteps }) => {
           {/* Circle */}
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold 
-              ${step <= currentStep ? "bg-yellow-400 text-black" : "bg-slate-700 text-gray-400"}`}
+              ${step <= currentStep ? "bg-yellow-400 text-black" : "bg-slate-700 text-white"}`}
           >
             {step}
           </div>

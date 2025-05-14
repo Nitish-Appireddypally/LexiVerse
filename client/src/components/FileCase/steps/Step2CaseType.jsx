@@ -31,14 +31,14 @@ const [selectedType, setSelectedType] = useState(data || caseTypes[0]);  // Defa
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold mb-2 text-yellow-400">Suggested by LexiBot</h2>
+        <h2 className="text-xl font-semibold mb-2 text-black">Suggested by LexiBot</h2>
         <p className="bg-slate-800 p-4 rounded-xl text-sm text-gray-300 border border-slate-600 italic">
           {suggestion}
         </p>
       </div>
 
       <div>
-        <h2 className="text-lg font-medium mb-3 text-yellow-400">Select Case Type</h2>
+        <h2 className="text-lg font-medium mb-3 text-black">Select Case Type</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {caseTypes.map((type) => (
             <button
