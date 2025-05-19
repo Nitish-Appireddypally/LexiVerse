@@ -1,12 +1,13 @@
 // src/components/FileCase/steps/Step5ReviewSubmit.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 👈 Import navigation
-
+import { useNavigate } from "react-router-dom";
+import { generateCaseSummaryPdf } from "../../../utils/generateCaseSummaryPdf";
 
 const Step5ReviewSubmit = ({ data, onBack, onSubmit }) => {
   const { userInfo, caseType, caseDetails, evidence: evidenceFiles } = data;
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // 👈 Hook
+  const navigate = useNavigate();
+
   const handleSubmit = async () => {
     setLoading(true);
 
@@ -31,8 +32,12 @@ const Step5ReviewSubmit = ({ data, onBack, onSubmit }) => {
       const result = await response.json();
       console.log("✅ Case submitted successfully:", result);
       alert("✅ Case submitted successfully!");
-      navigate("/submission-success");
-      onSubmit(); // Trigger the success flow in parent
+
+      // 👉 Generate the beautiful LexiVerse-themed PDF
+      generateCaseSummaryPdf(casePayload);
+
+      // 👉 Notify parent and proceed
+      onSubmit();
     } catch (error) {
       console.error("🚨 Error submitting case:", error);
       alert("Something went wrong while submitting the case.");
@@ -45,7 +50,7 @@ const Step5ReviewSubmit = ({ data, onBack, onSubmit }) => {
     <div className="space-y-6">
       <h2 className="text-xl font-bold text-red-600">Review Your Case</h2>
 
-      <section className=" p-4 rounded-xl border border-slate-600 space-y-4">
+      <section className="p-4 rounded-xl border border-slate-600 space-y-4 bg-white shadow-lg">
         <div>
           <h3 className="text-red-600 font-medium mb-1">👤 User Info</h3>
           <p><b>Name:</b> {userInfo.name}</p>
@@ -68,13 +73,13 @@ const Step5ReviewSubmit = ({ data, onBack, onSubmit }) => {
         <div>
           <h3 className="text-red-600 font-medium mb-1">📎 Evidence Files</h3>
           {evidenceFiles && evidenceFiles.length > 0 ? (
-            <ul className="list-disc list-inside text-sm text-gray-300">
+            <ul className="list-disc list-inside text-sm text-gray-700">
               {evidenceFiles.map((file, idx) => (
                 <li key={idx}>{file.name}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-400">No files uploaded.</p>
+            <p className="text-gray-500">No files uploaded.</p>
           )}
         </div>
       </section>
