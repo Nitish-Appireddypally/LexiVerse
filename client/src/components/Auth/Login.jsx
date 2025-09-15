@@ -32,7 +32,7 @@ const Login = () => {
       if (user.role === "admin") {
         console.log("Redirecting to admin dashboard");
         navigate("/admin/dashboard");
-      } else if (user.role === "user" || user.role === "client") {
+      } else if (user.role === "user" || user.role === "client" || user.role === "Teamlead") {
         console.log("Redirecting to user/client dashboard");
         navigate("/user/dashboard");
       } else {
