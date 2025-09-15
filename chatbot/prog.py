@@ -7,8 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Retrieve the Groq API key from environment variables
-API_KEY = "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"
-
+API_KEY = os.getenv("API_KEY")
+print(API_KEY)
 if not API_KEY:
     st.error("GROQ_API_KEY is not set. Please set it in your environment variables.")
     st.stop()
