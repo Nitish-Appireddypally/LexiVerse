@@ -29,10 +29,10 @@ const Login = () => {
       console.log(user);
       
       // navigate("/dashboard");
-      if (user.role === "admin") {
+      if (user.role === "Admin") {
         console.log("Redirecting to admin dashboard");
         navigate("/admin/dashboard");
-      } else if (user.role === "user" || user.role === "client" || user.role === "Teamlead") {
+      } else if (user.role === "user" || user.role === "Client" || user.role === "Teamlead") {
         console.log("Redirecting to user/client dashboard");
         navigate("/user/dashboard");
       } else {

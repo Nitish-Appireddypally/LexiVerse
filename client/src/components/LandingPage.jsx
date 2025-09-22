@@ -197,7 +197,7 @@ export default function LandingPage() {
                 "LexiVerse helped me file a complaint within minutes. It’s a must-have tool!",
             },
             {
-              name: "Ravi Teja",
+              name: "Ravi Teja", 
               comment:
                 "As a lawyer, LexiVerse saves me hours of drafting time.",
             },

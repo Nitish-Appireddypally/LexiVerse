@@ -39,6 +39,7 @@ import AdminDashboard from "./components/Dashboard/AdminDashboard";
 import UserDashboard from "./components/Dashboard/UserDashboard";
 import UploadCasePage from "./pages/UploadCasePage";
 import SubmissionSuccess from "./components/FileCase/SubmissionSuccess";
+import CasesPage from "./pages/casesPage";
 
 // Toast Notifications
 import { ToastContainer } from "react-toastify";
@@ -64,6 +65,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/upload-case" element={<UploadCasePage />} />
         <Route path="/submission-success" element={<SubmissionSuccess />} />
+        <Route path="/cases" element={<CasesPage />} />
       </Routes>
     </BrowserRouter>
   );

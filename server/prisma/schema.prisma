@@ -1,0 +1,210 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- ENUMS (Custom Data Types) ---
+
+enum UserRole {
+  Client
+  Lawyer
+  Admin
+}
+
+enum CaseParticipantRole {
+  Petitioner
+  Respondent
+  Victim
+  Accused
+  Witness
+  LeadCounsel
+}
+
+enum CaseStatus {
+  Draft
+  Submitted
+  FIR_Filed
+  In_Court
+  Resolved
+  Closed
+}
+
+enum CourtType {
+  Supreme_Court
+  High_Court
+  District_Court
+  Magistrate
+}
+
+enum DocumentType {
+  Evidence
+  Generated_FIR
+  Legal_Notice
+  Court_Order
+}
+
+enum ChatRole {
+  user
+  assistant
+}
+
+
+// --- TABLE DEFINITIONS ---
+
+// 1. users Table
+model User {
+  id            Int             @id @default(autoincrement())
+  name          String
+  email         String          @unique
+  password_hash String
+  phone_number  String?
+  address       String?
+  role          UserRole        @default(Client)
+  created_at    DateTime        @default(now())
+
+  lawyer_profile    LawyerProfile?
+  cases_as_participant CaseParticipant[]
+  chat_histories    ChatHistory[]
+
+  @@map("users")
+}
+
+// 2. lawyer_profiles Table
+model LawyerProfile {
+  user_id           Int      @id
+  bar_council_id    String   @unique
+  specializations   String[]
+  experience_years  Int?
+  bio               String?
+  is_verified       Boolean  @default(false)
+  
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("lawyer_profiles")
+}
+
+// 3. cases Table
+model Case {
+  id                  Int      @id @default(autoincrement())
+  title               String
+  description         String?
+  case_type           String?
+  status              CaseStatus @default(Submitted)
+  created_at          DateTime @default(now())
+
+  court_id            Int?
+  presiding_judge_id  Int?
+
+  court               Court?   @relation(fields: [court_id], references: [id])
+  judge               Judge?   @relation(fields: [presiding_judge_id], references: [id])
+  
+  participants CaseParticipant[]
+  documents    CaseDocument[]
+  hearings     Hearing[]
+  fir          FIR?
+
+  @@map("cases")
+}
+
+// 4. case_participants Table (Junction Table)
+model CaseParticipant {
+  case_id      Int
+  user_id      Int
+  role_in_case CaseParticipantRole
+
+  case         Case @relation(fields: [case_id], references: [id])
+  user         User @relation(fields: [user_id], references: [id])
+
+  @@id([case_id, user_id]) // Composite primary key
+  @@map("case_participants")
+}
+
+// 5. courts Table
+model Court {
+  id    Int       @id @default(autoincrement())
+  name  String
+  type  CourtType
+  city  String?
+  state String?
+
+  cases Case[]
+  judges Judge[]
+
+  @@map("courts")
+}
+
+// 6. judges Table
+model Judge {
+  id   Int    @id @default(autoincrement())
+  name String
+  
+  current_court_id Int?
+  court Court? @relation(fields: [current_court_id], references: [id])
+
+  cases Case[]
+  
+  @@map("judges")
+}
+
+// 7. hearings Table
+model Hearing {
+  id                Int       @id @default(autoincrement())
+  hearing_date      DateTime
+  summary           String?
+  next_hearing_date DateTime?
+
+  case_id Int
+  case    Case @relation(fields: [case_id], references: [id])
+  
+  @@map("hearings")
+}
+
+// 8. firs Table
+model FIR {
+  id                    Int      @id @default(autoincrement())
+  fir_number            String?
+  police_station        String?
+  investigating_officer String?
+  receipt_url           String?
+  status                String   @default("Drafted")
+
+  case_id Int @unique
+  case    Case @relation(fields: [case_id], references: [id])
+
+  @@map("firs")
+}
+
+// 9. case_documents Table
+model CaseDocument {
+  id            Int          @id @default(autoincrement())
+  file_name     String
+  file_url      String
+  document_type DocumentType
+  uploaded_at   DateTime     @default(now())
+
+  case_id Int
+  case    Case @relation(fields: [case_id], references: [id])
+
+  @@map("case_documents")
+}
+
+// 10. chat_histories Table
+model ChatHistory {
+  id         Int      @id @default(autoincrement())
+  session_id String   @default(uuid())
+  role       ChatRole
+  content    String
+  created_at DateTime @default(now())
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
+  
+  @@map("chat_histories")
+}

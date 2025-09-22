@@ -8,39 +8,93 @@ const Step5ReviewSubmit = ({ data, onBack, onSubmit }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // const handleSubmit = async () => {
+  //   setLoading(true);
+
+  //   const casePayload = {
+  //     caseTitle: caseDetails.summary || "Untitled Case",
+  //     userInfo,
+  //     caseDetails,
+  //     evidenceFiles,
+  //   };
+
+  //   try {
+  //     const response = await fetch("http://localhost:5050/api/cases", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(casePayload),
+  //     });
+
+  //     if (!response.ok) throw new Error("Failed to submit case");
+
+  //     const result = await response.json();
+  //     console.log("✅ Case submitted successfully:", result);
+  //     alert("✅ Case submitted successfully!");
+
+  //     // 👉 Generate the beautiful LexiVerse-themed PDF
+  //     generateCaseSummaryPdf(casePayload);
+
+  //     // 👉 Notify parent and proceed
+  //     onSubmit();
+  //   } catch (error) {
+  //     console.error("🚨 Error submitting case:", error);
+  //     alert("Something went wrong while submitting the case.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleSubmit = async () => {
     setLoading(true);
 
     const casePayload = {
+      // The frontend sends `caseTitle`, but our Prisma schema now expects `title`.
+      // The backend handles this, but it's good practice to align them. We'll send both for now.
       caseTitle: caseDetails.summary || "Untitled Case",
-      userInfo,
+      caseType,
       caseDetails,
-      evidenceFiles,
+      // Note: File upload logic will need to be handled separately later.
     };
 
+    // --- START: NEW AUTHENTICATION LOGIC ---
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert("Authentication error: You are not logged in. Please log in again.");
+      setLoading(false);
+      return;
+    }
+    // --- END: NEW AUTHENTICATION LOGIC ---
+
     try {
+      // NOTE: We are using `fetch` here as in your original code.
       const response = await fetch("http://localhost:5050/api/cases", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          // Add the Authorization header with the JWT
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(casePayload),
       });
 
-      if (!response.ok) throw new Error("Failed to submit case");
+      if (!response.ok) {
+        // Try to get a more specific error message from the backend
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to submit case");
+      }
 
       const result = await response.json();
       console.log("✅ Case submitted successfully:", result);
       alert("✅ Case submitted successfully!");
+      
+      // onSubmit(); // This function should likely navigate the user to a success page or the new cases page
+      navigate('/cases'); // Navigate to the new case tracking page
 
-      // 👉 Generate the beautiful LexiVerse-themed PDF
-      generateCaseSummaryPdf(casePayload);
-
-      // 👉 Notify parent and proceed
-      onSubmit();
     } catch (error) {
       console.error("🚨 Error submitting case:", error);
-      alert("Something went wrong while submitting the case.");
+      alert(`Submission failed: ${error.message}`);
     } finally {
       setLoading(false);
     }
