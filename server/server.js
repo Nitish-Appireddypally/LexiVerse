@@ -49,6 +49,7 @@ require("dotenv").config({ path: "./.env" });
 const authRoutes = require("./routes/authRoutes");
 const caseRoutes = require("./routes/caseRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
+const userRoutes = require("./routes/userRoutes"); // 👈 1. Import user routes
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/cases", caseRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/users", userRoutes); // 👈 2. Use user routes
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });

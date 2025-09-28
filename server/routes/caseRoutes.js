@@ -59,33 +59,29 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const { protect } = require('../middleware/authMiddleware'); // Import our security middleware
+// --- CHANGE #1: We now import 'authorize' instead of 'protect' ---
+const { authorize } = require('../middleware/authMiddleware'); 
 const prisma = new PrismaClient();
 
 // POST /api/cases - API to submit a new case
-// We apply the 'protect' middleware to ensure only logged-in users can file a case.
-router.post("/", protect, async (req, res) => {
+// Any authenticated user ('Client', 'Lawyer', 'Admin') can file a case.
+router.post("/", authorize(['Client', 'Lawyer', 'Admin']), async (req, res) => {
   console.log("🛬 /api/cases POST endpoint hit with Prisma");
 
-  // The frontend sends `caseTitle`, but our schema expects `title`. We can alias it.
   const { caseTitle, caseType, caseDetails } = req.body;
-
-  // The user's ID is available from our 'protect' middleware
   const clientId = req.user.id; 
 
   try {
     const newCase = await prisma.case.create({
       data: {
-        title: caseTitle, // Use the aliased variable
+        title: caseTitle,
         case_type: caseType,
-        description: caseDetails.incident, // Map incident details to the description field
-        status: 'Submitted', // Set the default status
-        
-        // Create the link between the case and the user filing it
+        description: caseDetails.incident,
+        status: 'Submitted',
         participants: {
           create: {
             user_id: clientId,
-            role_in_case: 'Petitioner' // The person filing the case is the Petitioner
+            role_in_case: 'Petitioner'
           }
         }
       }
@@ -99,21 +95,16 @@ router.post("/", protect, async (req, res) => {
 });
 
 // GET /api/cases - API to fetch all cases
-// For now, let's protect this so only an Admin can see all cases.
-router.get("/", protect, async (req, res) => {
+// --- CHANGE #2: We now specify that ONLY 'Admin' role can access this route ---
+router.get("/", authorize(['Admin']), async (req, res) => {
   try {
-    // A simple authorization check
-    if (req.user.role !== 'Admin') {
-      // If not an admin, we could return just their cases in the future.
-      // For now, let's deny access.
-      return res.status(403).json({ error: "Access denied. Admin role required." });
-    }
+    // --- CHANGE #3: The old "if (req.user.role !== 'Admin')" check is NO LONGER NEEDED here ---
+    // The middleware handles the security check for us.
 
     const allCases = await prisma.case.findMany({
       orderBy: {
         created_at: 'desc'
       },
-      // Include participant info in the response
       include: {
         participants: {
           include: {
@@ -131,20 +122,41 @@ router.get("/", protect, async (req, res) => {
   }
 });
 
-// PUT /api/cases/:id - API to update case status
-router.put("/:id", protect, async (req, res) => {
-  // Only an Admin should be able to update a case status
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({ error: "Access denied. Admin role required." });
+// --- NEW FEATURE: A route for users to get only their own cases ---
+router.get("/my-cases", authorize(['Client', 'Lawyer', 'Admin']), async (req, res) => {
+  const userId = req.user.id;
+  try {
+    const userCases = await prisma.case.findMany({
+      where: {
+        participants: {
+          some: { user_id: userId } // Prisma query to find cases where the user is a participant
+        }
+      },
+      orderBy: { created_at: 'desc' },
+      include: {
+        participants: { include: { user: { select: { name: true } } } }
+      }
+    });
+    res.status(200).json(userCases);
+  } catch (error) {
+     console.error("Error fetching user's cases:", error);
+     res.status(500).json({ error: "Failed to fetch your cases" });
   }
+});
 
+
+// PUT /api/cases/:id - API to update case status
+// --- CHANGE #4: We now specify that ONLY 'Admin' role can access this route ---
+router.put("/:id", authorize(['Admin']), async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
   try {
+    // --- CHANGE #5: The old "if (req.user.role !== 'Admin')" check is also removed from here ---
+    
     const updatedCase = await prisma.case.update({
       where: { id: parseInt(id) },
-      data: { status: status },
+      data: { status }, // Note: Prisma expects the ENUM format, e.g., 'In_Court'
     });
     res.status(200).json(updatedCase);
   } catch (error) {

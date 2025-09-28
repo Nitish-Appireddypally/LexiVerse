@@ -9,30 +9,46 @@ const CasesPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // --- START: UPDATED DATA FETCHING LOGIC ---
   useEffect(() => {
-    const fetchCases = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          throw new Error('No authentication token found. Please log in again.');
+          throw new Error('Authentication token not found. Please log in.');
+        }
+        
+        // --- NEW: Step 1 -> Fetch the current user's data ---
+        const userResponse = await axios.get('http://localhost:5050/api/users/me', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        const user = userResponse.data;
+
+        if (!user) {
+          throw new Error('Could not retrieve user data.');
         }
 
-        const response = await axios.get('http://localhost:5050/api/cases', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+        // --- NEW: Step 2 -> Use the user's role to fetch cases ---
+        const endpoint = user.role === 'Admin' 
+          ? 'http://localhost:5050/api/cases' 
+          : 'http://localhost:5050/api/cases/my-cases';
+
+        const casesResponse = await axios.get(endpoint, {
+          headers: { 'Authorization': `Bearer ${token}` },
         });
         
-        setCases(response.data);
+        setCases(casesResponse.data);
       } catch (err) {
-        setError(err.message);
+        const errorMessage = err.response?.data?.message || err.message;
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCases();
+    fetchData();
   }, []);
+  // --- END: UPDATED DATA FETCHING LOGIC ---
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -43,7 +59,6 @@ const CasesPage = () => {
   };
 
   const getStatusBadge = (status) => {
-    // This handles the new PascalCase status from Prisma
     const lowerStatus = status.toLowerCase().replace('_', ' ');
     switch (lowerStatus) {
       case 'submitted':
@@ -75,6 +90,7 @@ const CasesPage = () => {
                 <thead className="bg-[#1F2937] text-white">
                   <tr>
                     <th className="p-4 font-semibold">Case Title</th>
+                    <th className="p-4 font-semibold">Petitioner</th>
                     <th className="p-4 font-semibold">Submission Date</th>
                     <th className="p-4 font-semibold">Status</th>
                     <th className="p-4 font-semibold">Actions</th>
@@ -84,9 +100,9 @@ const CasesPage = () => {
                   {cases.length > 0 ? (
                     cases.map((caseItem, index) => (
                       <tr key={caseItem.id} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-[#F9FAFB]'}`}>
-                        {/* 👇 FIX #1: Changed caseItem.case_title to caseItem.title */}
                         <td className="p-4 font-medium text-gray-800">{caseItem.title}</td>
-                        {/* 👇 FIX #2: Changed caseItem.submission_date to caseItem.created_at */}
+                        {/* Display the name of the first participant (the petitioner) */}
+                        <td className="p-4 text-gray-600">{caseItem.participants[0]?.user?.name || 'N/A'}</td>
                         <td className="p-4 text-gray-600">{formatDate(caseItem.created_at)}</td>
                         <td className="p-4">
                           <span className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadge(caseItem.status)}`}>
@@ -102,7 +118,7 @@ const CasesPage = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="4" className="p-6 text-center text-gray-500">No cases found.</td>
+                      <td colSpan="5" className="p-6 text-center text-gray-500">No cases found.</td>
                     </tr>
                   )}
                 </tbody>
