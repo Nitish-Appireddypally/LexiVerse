@@ -66,18 +66,23 @@ const prisma = new PrismaClient();
 // POST /api/cases - API to submit a new case
 // Any authenticated user ('Client', 'Lawyer', 'Admin') can file a case.
 router.post("/", authorize(['Client', 'Lawyer', 'Admin']), async (req, res) => {
-  console.log("🛬 /api/cases POST endpoint hit with Prisma");
-
-  const { caseTitle, caseType, caseDetails } = req.body;
+  const { complainantDetails, offenseDetails, accusedPersons, witnesses, caseNarrative } = req.body;
   const clientId = req.user.id; 
 
   try {
     const newCase = await prisma.case.create({
       data: {
-        title: caseTitle,
-        case_type: caseType,
-        description: caseDetails.incident,
+        title: caseNarrative.title,
+        case_type: caseNarrative.caseType,
+        description: caseNarrative.incidentDetails,
         status: 'Submitted',
+        // Store all the rich, structured data in our new JSON field
+        full_details: {
+          complainant: complainantDetails,
+          offense: offenseDetails,
+          accused: accusedPersons,
+          witnesses: witnesses
+        },
         participants: {
           create: {
             user_id: clientId,
@@ -86,10 +91,9 @@ router.post("/", authorize(['Client', 'Lawyer', 'Admin']), async (req, res) => {
         }
       }
     });
-
     res.status(201).json(newCase);
   } catch (error) {
-    console.error("Error submitting case with Prisma:", error);
+    console.error("Error submitting case:", error);
     res.status(500).json({ error: "Failed to submit case" });
   }
 });

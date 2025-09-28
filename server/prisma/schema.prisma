@@ -97,11 +97,13 @@ model Case {
   description         String?
   case_type           String?
   status              CaseStatus @default(Submitted)
+  full_details        Json?    // 👈 ADD THIS LINE to store all form data
   created_at          DateTime @default(now())
 
   court_id            Int?
   presiding_judge_id  Int?
 
+  // ... rest of the model is the same
   court               Court?   @relation(fields: [court_id], references: [id])
   judge               Judge?   @relation(fields: [presiding_judge_id], references: [id])
   
