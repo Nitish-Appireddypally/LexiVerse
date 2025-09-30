@@ -43,6 +43,7 @@
 // });
 
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 require("dotenv").config({ path: "./.env" });
 
@@ -69,6 +70,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/cases", caseRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/users", userRoutes); // 👈 2. Use user routes
+// app.use('/fir_documents', express.static(path.join(__dirname, 'fir_documents')));
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });

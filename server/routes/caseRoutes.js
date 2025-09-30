@@ -61,6 +61,8 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 // --- CHANGE #1: We now import 'authorize' instead of 'protect' ---
 const { authorize } = require('../middleware/authMiddleware'); 
+const { generateFirPdf } = require('../controllers/firController'); // 👈 1. Import the new controller function
+
 const prisma = new PrismaClient();
 
 // POST /api/cases - API to submit a new case
@@ -168,5 +170,11 @@ router.put("/:id", authorize(['Admin']), async (req, res) => {
     res.status(500).json({ error: "Failed to update case status" });
   }
 });
+
+// --- NEW ROUTE ---
+// POST /api/cases/:id/generate-fir - Generate an FIR document for a case.
+// The user must be the petitioner of the case.
+router.post("/:id/generate-fir", authorize(['Client', 'Lawyer', 'Admin']), generateFirPdf); // 👈 2. Add the new route
+
 
 module.exports = router;

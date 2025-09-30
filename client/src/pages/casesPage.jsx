@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Dashboard/Sidebar';
 import Header from '../components/Dashboard/Header';
-import { FaEye } from 'react-icons/fa';
-
+import { FaEye, FaFilePdf } from 'react-icons/fa';
 const CasesPage = () => {
   const [cases, setCases] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [generatingId, setGeneratingId] = useState(null); // To track which FIR is being generated
 
   // --- START: UPDATED DATA FETCHING LOGIC ---
   useEffect(() => {
@@ -49,6 +49,50 @@ const CasesPage = () => {
     fetchData();
   }, []);
   // --- END: UPDATED DATA FETCHING LOGIC ---
+
+  // --- NEW: Function to handle FIR generation ---
+  const handleGenerateFir = async (caseId) => {
+    setGeneratingId(caseId);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `http://localhost:5050/api/cases/${caseId}/generate-fir`,
+        {},
+        { 
+          headers: { 'Authorization': `Bearer ${token}` },
+          responseType: 'blob', // IMPORTANT: Tell axios to expect a file Blob
+        }
+      );
+
+      // Create a Blob from the PDF stream
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      
+      // Build a URL from the file
+      const fileURL = URL.createObjectURL(file);
+      
+      // Create a temporary link to trigger the download
+      const link = document.createElement('a');
+      link.href = fileURL;
+      const fileName = `FIR-CASE-${caseId}.pdf`;
+      link.setAttribute('download', fileName);
+      
+      // Append to html link element page
+      document.body.appendChild(link);
+      
+      // Start download
+      link.click();
+      
+      // Clean up and remove the link
+      link.parentNode.removeChild(link);
+      
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || 'Failed to generate FIR.';
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setGeneratingId(null);
+    }
+  };
+
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -113,6 +157,15 @@ const CasesPage = () => {
                           <button className="text-gray-500 hover:text-[#FBBF24] transition" title="View Details">
                             <FaEye size={18} />
                           </button>
+                          {/* --- NEW: Generate FIR Button --- */}
+                      <button 
+                        onClick={() => handleGenerateFir(caseItem.id)}
+                        disabled={generatingId === caseItem.id}
+                        className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-wait transition" 
+                        title="Generate FIR PDF"
+                      >
+                        {generatingId === caseItem.id ? 'Generating...' : <FaFilePdf size={18} />}
+                      </button>
                         </td>
                       </tr>
                     ))
