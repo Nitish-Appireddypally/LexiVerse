@@ -3,13 +3,14 @@ import axios from 'axios';
 import Sidebar from '../components/Dashboard/Sidebar';
 import Header from '../components/Dashboard/Header';
 import { FaEye, FaFilePdf } from 'react-icons/fa';
+
 const CasesPage = () => {
   const [cases, setCases] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [generatingId, setGeneratingId] = useState(null); // To track which FIR is being generated
+  const [generatingId, setGeneratingId] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null); // State to hold the logged-in user
 
-  // --- START: UPDATED DATA FETCHING LOGIC ---
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -18,17 +19,18 @@ const CasesPage = () => {
           throw new Error('Authentication token not found. Please log in.');
         }
         
-        // --- NEW: Step 1 -> Fetch the current user's data ---
+        // Step 1: Fetch the current user's data
         const userResponse = await axios.get('http://localhost:5050/api/users/me', {
           headers: { 'Authorization': `Bearer ${token}` },
         });
         const user = userResponse.data;
+        setCurrentUser(user); // Store the user in state
 
         if (!user) {
           throw new Error('Could not retrieve user data.');
         }
 
-        // --- NEW: Step 2 -> Use the user's role to fetch cases ---
+        // Step 2: Use the user's role to fetch the correct list of cases
         const endpoint = user.role === 'Admin' 
           ? 'http://localhost:5050/api/cases' 
           : 'http://localhost:5050/api/cases/my-cases';
@@ -48,9 +50,7 @@ const CasesPage = () => {
 
     fetchData();
   }, []);
-  // --- END: UPDATED DATA FETCHING LOGIC ---
 
-  // --- NEW: Function to handle FIR generation ---
   const handleGenerateFir = async (caseId) => {
     setGeneratingId(caseId);
     try {
@@ -60,31 +60,18 @@ const CasesPage = () => {
         {},
         { 
           headers: { 'Authorization': `Bearer ${token}` },
-          responseType: 'blob', // IMPORTANT: Tell axios to expect a file Blob
+          responseType: 'blob',
         }
       );
-
-      // Create a Blob from the PDF stream
       const file = new Blob([response.data], { type: 'application/pdf' });
-      
-      // Build a URL from the file
       const fileURL = URL.createObjectURL(file);
-      
-      // Create a temporary link to trigger the download
       const link = document.createElement('a');
       link.href = fileURL;
       const fileName = `FIR-CASE-${caseId}.pdf`;
       link.setAttribute('download', fileName);
-      
-      // Append to html link element page
       document.body.appendChild(link);
-      
-      // Start download
       link.click();
-      
-      // Clean up and remove the link
       link.parentNode.removeChild(link);
-      
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to generate FIR.';
       alert(`Error: ${errorMessage}`);
@@ -92,7 +79,6 @@ const CasesPage = () => {
       setGeneratingId(null);
     }
   };
-
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -105,16 +91,11 @@ const CasesPage = () => {
   const getStatusBadge = (status) => {
     const lowerStatus = status.toLowerCase().replace('_', ' ');
     switch (lowerStatus) {
-      case 'submitted':
-        return 'bg-blue-100 text-blue-800';
-      case 'fir filed':
-        return 'bg-indigo-100 text-indigo-800';
-      case 'in court':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'resolved':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'submitted': return 'bg-blue-100 text-blue-800';
+      case 'fir filed': return 'bg-indigo-100 text-indigo-800';
+      case 'in court': return 'bg-yellow-100 text-yellow-800';
+      case 'resolved': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -125,7 +106,6 @@ const CasesPage = () => {
         <Header />
         <main className="flex-1 p-6">
           <h1 className="text-3xl font-bold text-[#1F2937] mb-6">Case Management</h1>
-
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             {isLoading && <p className="p-6 text-center text-gray-500">Loading cases...</p>}
             {error && <p className="p-6 text-center text-red-500">Error: {error}</p>}
@@ -137,38 +117,54 @@ const CasesPage = () => {
                     <th className="p-4 font-semibold">Petitioner</th>
                     <th className="p-4 font-semibold">Submission Date</th>
                     <th className="p-4 font-semibold">Status</th>
-                    <th className="p-4 font-semibold">Actions</th>
+                    <th className="p-4 font-semibold text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {cases.length > 0 ? (
-                    cases.map((caseItem, index) => (
-                      <tr key={caseItem.id} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-[#F9FAFB]'}`}>
-                        <td className="p-4 font-medium text-gray-800">{caseItem.title}</td>
-                        {/* Display the name of the first participant (the petitioner) */}
-                        <td className="p-4 text-gray-600">{caseItem.participants[0]?.user?.name || 'N/A'}</td>
-                        <td className="p-4 text-gray-600">{formatDate(caseItem.created_at)}</td>
-                        <td className="p-4">
-                          <span className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadge(caseItem.status)}`}>
-                            {caseItem.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="p-4">
-                          <button className="text-gray-500 hover:text-[#FBBF24] transition" title="View Details">
-                            <FaEye size={18} />
-                          </button>
-                          {/* --- NEW: Generate FIR Button --- */}
-                      <button 
-                        onClick={() => handleGenerateFir(caseItem.id)}
-                        disabled={generatingId === caseItem.id}
-                        className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-wait transition" 
-                        title="Generate FIR PDF"
-                      >
-                        {generatingId === caseItem.id ? 'Generating...' : <FaFilePdf size={18} />}
-                      </button>
-                        </td>
-                      </tr>
-                    ))
+                    cases.map((caseItem) => {
+                      // Logic to check if the current user is a participant in this case
+                      const isParticipant = currentUser && caseItem.participants.some(p => p.user_id === currentUser.id);
+
+                      return (
+                        <tr key={caseItem.id} className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="p-4 font-medium text-gray-800">{caseItem.title}</td>
+                          <td className="p-4 text-gray-600">{caseItem.participants[0]?.user?.name || 'N/A'}</td>
+                          <td className="p-4 text-gray-600">{formatDate(caseItem.created_at)}</td>
+                          <td className="p-4">
+                            <span className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadge(caseItem.status)}`}>
+                              {caseItem.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center">
+                            <div className="flex items-center justify-center gap-4">
+                              <button className="text-gray-500 hover:text-[#1F2937] transition" title="View Details">
+                                <FaEye size={18} />
+                              </button>
+                              
+                              {/* --- FINAL: Conditionally render the styled button --- */}
+                              {isParticipant && (
+                                <button
+                                  onClick={() => handleGenerateFir(caseItem.id)}
+                                  disabled={generatingId === caseItem.id}
+                                  className="flex items-center gap-2 text-xs font-bold py-1 px-3 bg-[#1F2937] text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-wait transition"
+                                  title="Generate FIR PDF"
+                                >
+                                  {generatingId === caseItem.id ? (
+                                    <span>Generating...</span>
+                                  ) : (
+                                    <>
+                                      <FaFilePdf />
+                                      <span>FIR</span>
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td colSpan="5" className="p-6 text-center text-gray-500">No cases found.</td>
