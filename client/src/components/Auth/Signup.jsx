@@ -110,6 +110,13 @@ const Signup = () => {
             Log In
           </Link>
         </p>
+        {/* 👇 ADD THIS NEW LINK 👇 */}
+        <p className="mt-4 text-center text-xs text-gray-500 border-t pt-4">
+          Are you a legal professional?{' '}
+          <Link to="/signup-lawyer" className="font-semibold text-blue-600 hover:underline">
+            Register Here
+          </Link>
+        </p>
       </div>
     </div>
   );

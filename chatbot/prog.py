@@ -128,8 +128,11 @@ st.markdown("""
     header {
         visibility: hidden;
     }
+    a {
+        visibility: hidden;
+    }
     /* Hide the "Deploy" button */
-    .stDeployButton {
+    .stDeployButton, {
         visibility: hidden;
     }
 </style>
