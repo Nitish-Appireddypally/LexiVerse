@@ -128,10 +128,11 @@ const CasesPage = () => {
             )}
             {!isLoading && !error && (
               <table className="w-full text-left">
-                <thead className="bg-[#1F2937] text-white">
+                 <thead className="bg-[#1F2937] text-white">
                   <tr>
                     <th className="p-4 font-semibold">Case Title</th>
                     <th className="p-4 font-semibold">Petitioner</th>
+                    <th className="p-4 font-semibold">Assigned Counsel</th>
                     <th className="p-4 font-semibold">Submission Date</th>
                     <th className="p-4 font-semibold">Status</th>
                     <th className="p-4 font-semibold text-center">Actions</th>
@@ -140,6 +141,13 @@ const CasesPage = () => {
                 <tbody>
                   {cases.length > 0 ? (
                     cases.map((caseItem) => {
+                      // Find the accepted lawyer in the participants list
+                      const assignedLawyer = caseItem.participants.find(
+                        (p) =>
+                          p.role_in_case === "LeadCounsel" &&
+                          p.status === "Accepted"
+                      );
+
                       // Logic to check if the current user is a participant in this case
                       const isParticipant =
                         currentUser &&
@@ -162,6 +170,10 @@ const CasesPage = () => {
                           </td>
                           <td className="p-4 text-gray-600">
                             {caseItem.participants[0]?.user?.name || "N/A"}
+                          </td>
+                          {/* 👇 NEW COLUMN'S DATA 👇 */}
+                          <td className="p-4 font-semibold text-green-700">
+                            {assignedLawyer?.user?.name || "Pending"}
                           </td>
                           <td className="p-4 text-gray-600">
                             {formatDate(caseItem.created_at)}

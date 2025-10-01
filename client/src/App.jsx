@@ -44,6 +44,8 @@ import CaseDetailPage from "./pages/CaseDetailPage";
 import LawyerDashboard from './pages/LawyerDashboard';
 import LawyerProfilePage from './pages/LawyerProfilePage';
 import SignupLawyer from "./components/Auth/SignupLawyer";
+import FindLawyerPage from "./pages/FindLawyerPage";
+import LawyerActiveCasesPage from "./pages/LawyerActiveCasesPage";
 
 // Toast Notifications
 import { ToastContainer } from "react-toastify";
@@ -72,8 +74,10 @@ function App() {
         <Route path="/submission-success" element={<SubmissionSuccess />} />
         <Route path="/cases" element={<CasesPage />} />
         <Route path="/case/:id" element={<CaseDetailPage />} /> {/* 👈 2. Add the new dynamic route */}
+        <Route path="/find-lawyer" element={<FindLawyerPage />} />
         <Route path="/lawyer/dashboard" element={<LawyerDashboard />} />
         <Route path="/lawyer/profile" element={<LawyerProfilePage />} />
+        <Route path="/lawyer/cases" element={<LawyerActiveCasesPage />} />
       </Routes>
     </BrowserRouter>
   );

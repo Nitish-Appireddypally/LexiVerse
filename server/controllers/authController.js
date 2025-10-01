@@ -124,28 +124,12 @@ const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// --- START: UPDATED signupUser FUNCTION ---
 const signupUser = async (req, res) => {
-  // Use let to allow modification
-  let { name, email, password, role } = req.body;
+  // We now also expect an optional bar_council_id
+  const { name, email, password, role = 'Client', bar_council_id } = req.body;
 
   try {
-    // --- START: NEW ROLE VALIDATION & FORMATTING ---
-    if (!role) {
-      role = 'Client'; // Default to Client if no role is sent from the frontend
-    }
-
-    const lowerCaseRole = role.toLowerCase();
-    const validRoles = ['client', 'lawyer', 'admin'];
-
-    if (!validRoles.includes(lowerCaseRole)) {
-      return res.status(400).json({ message: `Invalid role. Must be one of: ${validRoles.join(', ')}` });
-    }
-    
-    // Capitalize the first letter to match the Prisma Enum (e.g., 'client' -> 'Client')
-    const formattedRole = lowerCaseRole.charAt(0).toUpperCase() + lowerCaseRole.slice(1);
-    // --- END: NEW ROLE VALIDATION & FORMATTING ---
-
-
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "User with this email already exists." });
@@ -154,12 +138,19 @@ const signupUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const password_hash = await bcrypt.hash(password, salt);
 
+    // This is the core change. We create the user and conditionally create the lawyer profile.
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
         password_hash,
-        role: formattedRole, // Use the correctly formatted role here
+        role,
+        // --- Prisma Nested Write ---
+        // If the role is 'Lawyer' and a bar_council_id is provided,
+        // create the related lawyer_profile record at the same time.
+        lawyer_profile: (role === 'Lawyer' && bar_council_id)
+          ? { create: { bar_council_id } }
+          : undefined,
       },
     });
 
@@ -183,40 +174,39 @@ const signupUser = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+// --- END: UPDATED signupUser FUNCTION ---
 
+// The loginUser function remains the same
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+    // ... no changes needed here
+    const { email, password } = req.body;
+    try {
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Invalid credentials' });
+        }
+        const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+        res.json({
+            token,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (err) {
+        console.error("Login Error:", err.message);
+        res.status(500).send('Server Error');
     }
-
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-  } catch (err) {
-    console.error("Login Error:", err.message);
-    res.status(500).send('Server Error');
-  }
 };
 
 module.exports = { loginUser, signupUser };

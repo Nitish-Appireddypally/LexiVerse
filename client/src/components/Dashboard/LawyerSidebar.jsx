@@ -1,12 +1,13 @@
 // client/src/components/Dashboard/LawyerSidebar.jsx
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { FaTachometerAlt, FaUserTie, FaFolderOpen, FaDollarSign } from "react-icons/fa";
+import { FaTachometerAlt, FaUserTie, FaFolderOpen, FaDollarSign, FaGavel } from "react-icons/fa";
 
 const menuItems = [
   { name: "Dashboard", icon: <FaTachometerAlt />, route: "/lawyer/dashboard" },
   { name: "My Profile", icon: <FaUserTie />, route: "/lawyer/profile" },
   { name: "Case Requests", icon: <FaFolderOpen />, route: "/lawyer/requests" },
+  { name: "Active Cases", icon: <FaGavel />, route: "/lawyer/cases" }, // 👈 ADD THIS
   { name: "Billing", icon: <FaDollarSign />, route: "/lawyer/billing" },
 ];
 

@@ -26,6 +26,11 @@ enum CaseParticipantRole {
   Witness
   LeadCounsel
 }
+enum CaseParticipantStatus {
+  Pending
+  Accepted
+  Declined
+}
 
 enum CaseStatus {
   Draft
@@ -38,6 +43,7 @@ enum CaseStatus {
   In_Court
   Resolved
   Closed
+  Lawyer_Engaged // Make sure this value exists
 }
 
 enum CourtType {
@@ -76,6 +82,7 @@ model User {
   lawyer_profile    LawyerProfile?
   cases_as_participant CaseParticipant[]
   chat_histories    ChatHistory[]
+  notifications    Notification[] // 👈 ADD THIS LINE
 
   @@map("users")
 }
@@ -124,6 +131,8 @@ model CaseParticipant {
   case_id      Int
   user_id      Int
   role_in_case CaseParticipantRole
+  status       CaseParticipantStatus @default(Pending) // 👈 ADD THIS LINE
+
 
   case         Case @relation(fields: [case_id], references: [id])
   user         User @relation(fields: [user_id], references: [id])
@@ -214,4 +223,17 @@ model ChatHistory {
   user    User @relation(fields: [user_id], references: [id])
   
   @@map("chat_histories")
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  message    String
+  is_read    Boolean  @default(false)
+  link       String?  // Optional link to navigate to, e.g., /case/7
+  created_at DateTime @default(now())
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
+
+  @@map("notifications")
 }

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Dashboard/Sidebar';
 import Header from '../components/Dashboard/Header';
-import { FaCheckCircle, FaCircle, FaEdit, FaTimes } from 'react-icons/fa';
+import { FaCheckCircle, FaCircle, FaEdit, FaTimes, FaUserTie } from 'react-icons/fa';
 
 const DetailItem = ({ label, value }) => (
     <div className="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
@@ -114,6 +114,10 @@ const CaseDetailPage = () => {
     const areFirDetailsFilled = firDetails.fir_number && firDetails.police_station;
     const isIoAssigned = areFirDetailsFilled && firDetails.investigating_officer;
 
+        // Find the accepted lawyer in the participants list
+    const assignedLawyer = caseData.participants.find(p => p.role_in_case === 'LeadCounsel' && p.status === 'Accepted');
+
+
     return (
         <div className="flex bg-[#F9FAFB]">
             <Sidebar />
@@ -128,6 +132,19 @@ const CaseDetailPage = () => {
                         </div>
                         <span className="text-sm font-bold py-1 px-3 bg-blue-100 text-blue-800 rounded-full">{caseData.status.replace(/_/g, ' ')}</span>
                     </div>
+
+                     {/* 👇 ADD THIS NEW BUTTON/LINK 👇 */}
+    {/* Show "Find a Lawyer" button ONLY if no lawyer is engaged */}
+                    {!assignedLawyer && (
+                        <div className="mb-8">
+                            <Link 
+                                to={`/find-lawyer?caseId=${caseData.id}`} 
+                                className="inline-block py-2 px-6 bg-[#FBBF24] text-[#1F2937] font-bold rounded-lg shadow-md hover:bg-yellow-300 transition-colors"
+                            >
+                                Find a Lawyer for this Case
+                            </Link>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
                         {/* Left Column */}
