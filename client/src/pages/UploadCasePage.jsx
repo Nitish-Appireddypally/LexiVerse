@@ -104,9 +104,6 @@
 
 // export default UploadCasePage;
 
-
-
-
 import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Dashboard/Sidebar";
 import Header from "../components/Dashboard/Header";
@@ -165,44 +162,42 @@ const UploadCasePage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* Sidebar */}
-      <div className="w-64 fixed top-0 left-0 h-full z-50 border-r border-gray-200 bg-white">
-        <Sidebar />
-      </div>
+    // This structure now matches your DashboardHome for consistency
+    <div className="flex bg-[#F9FAFB] min-h-screen">
+      <Sidebar />
+      <ToastContainer position="top-right" autoClose={5000} />
 
-      {/* Main Content */}
-      <div className="ml-64 flex-1 overflow-y-auto">
+      {/* This single div is now the main scrollable container */}
+      <div className="ml-64 flex-1 p-6 overflow-y-auto">
         <Header />
-        <ToastContainer position="top-right" autoClose={5000} />
         
-        <div className="px-10 py-12 max-w-6xl mx-auto bg-white p-8 md:p-10">
+        <main className="mt-8">
           {submitted ? (
             <SubmissionSuccess />
           ) : (
-            <>
-              <div className="mb-10">
-                <h1 className="text-2xl font-semibold text-red-600 ">
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-[#1F2937]">
                   📝 File a New Case
                 </h1>
-                <p className="text-gray-600 mt-2 text-sm">
-                  Please fill in the required case details below.
+                <p className="text-gray-600 mt-2">
+                  Please provide the following details accurately to generate a professional FIR draft.
                 </p>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 md:p-4">
-                <FileCase
-                  data={formData}
-                  update={updateStepData}
-                  onSubmit={handleSubmit}
-                />
-              </div>
-            </>
+              <FileCase
+                data={formData}
+                update={updateStepData}
+                onSubmit={handleSubmit}
+              />
+            </div>
           )}
-        </div>
+        </main>
       </div>
     </div>
   );
 };
+
+
 
 export default UploadCasePage;

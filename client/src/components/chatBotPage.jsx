@@ -35,7 +35,7 @@ const ChatbotPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="ml-64 w-full flex flex-col h-screen">
+      <div className="ml-64 p-6 w-full flex flex-col h-screen">
         <Header />
         <main className="flex-1 p-6 overflow-hidden">
           <div className="w-full h-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -43,7 +43,7 @@ const ChatbotPage = () => {
               src={streamlitAppUrl}
               width="100%"
               height="100%"
-              style={{ border: 'none' }} // Removes the default iframe border
+              style={{ border: 'none', backgroundColor: 'white' }} // Removes the default iframe border
               title="LexiVerse AI Chatbot"
             />
           </div>

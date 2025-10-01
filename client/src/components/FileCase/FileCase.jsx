@@ -1,9 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import StepProgressBar from "./StepProgressBar";
 import SubmissionSuccess from "./SubmissionSuccess";
-
-// Import all our new and old step components
 import Step1ComplainantDetails from "./steps/Step1ComplainantDetails";
 import Step2OffenseDetails from "./steps/Step2OffenseDetails";
 import Step3AccusedDetails from "./steps/Step3AccusedDetails";
@@ -12,21 +9,9 @@ import Step5CaseNarrative from "./steps/Step5CaseNarrative";
 import Step6EvidenceUpload from "./steps/Step6EvidenceUpload";
 import Step7ReviewSubmit from "./steps/Step7ReviewSubmit";
 
-
-const FileCase = () => {
+// This component now receives its data and logic via props from UploadCasePage
+const FileCase = ({ data, update, onSubmit }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const navigate = useNavigate();
-
-  // NEW: Updated state to hold all the detailed information
-  const [formData, setFormData] = useState({
-    complainantDetails: {},
-    offenseDetails: {},
-    accusedPersons: [{ name: '', address: '' }], // Start with one empty entry
-    witnesses: [{ name: '', contact: '' }], // Start with one empty entry
-    caseNarrative: {},
-    evidence: [],
-  });
-
   const totalSteps = 7;
 
   const nextStep = () => {
@@ -37,44 +22,38 @@ const FileCase = () => {
     if (currentStep > 1) setCurrentStep(prev => prev - 1);
   };
   
-  const handleFinalSubmit = () => {
-    // This will be called by the final step after a successful API call
-    console.log("Final form data submitted:", formData);
-    // For now, let's navigate to a success page or the cases dashboard
-    navigate('/cases');
-  }
-
-  const updateFormData = (stepKey, data) => {
-    setFormData(prev => ({ ...prev, [stepKey]: data }));
+  // This function now calls the 'update' function passed down from the parent
+  const updateFormData = (stepKey, stepData) => {
+    update(stepKey, stepData);
   };
 
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <Step1ComplainantDetails data={formData.complainantDetails} onNext={nextStep} update={data => updateFormData("complainantDetails", data)} />;
+        return <Step1ComplainantDetails data={data.complainantDetails} onNext={nextStep} update={stepData => updateFormData("complainantDetails", stepData)} />;
       case 2:
-        return <Step2OffenseDetails data={formData.offenseDetails} onNext={nextStep} onBack={prevStep} update={data => updateFormData("offenseDetails", data)} />;
+        return <Step2OffenseDetails data={data.offenseDetails} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("offenseDetails", stepData)} />;
       case 3:
-        return <Step3AccusedDetails data={formData.accusedPersons} onNext={nextStep} onBack={prevStep} update={data => updateFormData("accusedPersons", data)} />;
+        return <Step3AccusedDetails data={data.accusedPersons} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("accusedPersons", stepData)} />;
       case 4:
-        return <Step4WitnessDetails data={formData.witnesses} onNext={nextStep} onBack={prevStep} update={data => updateFormData("witnesses", data)} />;
+        return <Step4WitnessDetails data={data.witnesses} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("witnesses", stepData)} />;
       case 5:
-        return <Step5CaseNarrative data={formData.caseNarrative} onNext={nextStep} onBack={prevStep} update={data => updateFormData("caseNarrative", data)} />;
+        return <Step5CaseNarrative data={data.caseNarrative} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("caseNarrative", stepData)} />;
       case 6:
-        return <Step6EvidenceUpload data={formData.evidence} onNext={nextStep} onBack={prevStep} update={data => updateFormData("evidence", data)} />;
+        return <Step6EvidenceUpload data={data.evidence} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("evidence", stepData)} />;
       case 7:
-        return <Step7ReviewSubmit data={formData} onBack={prevStep} onSubmit={handleFinalSubmit} />;
+        // The final onSubmit function is passed to the last step
+        return <Step7ReviewSubmit data={data} onBack={prevStep} onSubmit={onSubmit} />; 
       default:
-        return <SubmissionSuccess />; // Or some other final state
+        return <SubmissionSuccess />;
     }
   };
 
   return (
-    <div className="p-6 mx-auto max-w-4xl">
-      <h1 className="text-3xl font-bold text-gray-800 mb-2">File a New Case</h1>
-      <p className="text-gray-500 mb-8">Please provide the following details accurately to generate a professional FIR draft.</p>
+    // The component is now just a simple container for the steps
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 md:p-10">
       <StepProgressBar currentStep={currentStep} totalSteps={totalSteps} />
-      <div className="mt-8 p-8 bg-white rounded-xl shadow-lg border border-gray-200">
+      <div className="mt-8">
         {renderStep()}
       </div>
     </div>

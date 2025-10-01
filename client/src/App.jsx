@@ -40,6 +40,7 @@ import UserDashboard from "./components/Dashboard/UserDashboard";
 import UploadCasePage from "./pages/UploadCasePage";
 import SubmissionSuccess from "./components/FileCase/SubmissionSuccess";
 import CasesPage from "./pages/casesPage";
+import CaseDetailPage from "./pages/CaseDetailPage";
 
 // Toast Notifications
 import { ToastContainer } from "react-toastify";
@@ -66,6 +67,7 @@ function App() {
         <Route path="/upload-case" element={<UploadCasePage />} />
         <Route path="/submission-success" element={<SubmissionSuccess />} />
         <Route path="/cases" element={<CasesPage />} />
+        <Route path="/case/:id" element={<CaseDetailPage />} /> {/* 👈 2. Add the new dynamic route */}
       </Routes>
     </BrowserRouter>
   );

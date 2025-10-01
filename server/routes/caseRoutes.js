@@ -59,15 +59,15 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-// --- CHANGE #1: We now import 'authorize' instead of 'protect' ---
 const { authorize } = require('../middleware/authMiddleware'); 
-const { generateFirPdf } = require('../controllers/firController'); // 👈 1. Import the new controller function
+const { generateFirPdf } = require('../controllers/firController');
 
 const prisma = new PrismaClient();
 
-// POST /api/cases - API to submit a new case
-// Any authenticated user ('Client', 'Lawyer', 'Admin') can file a case.
-router.post("/", authorize(['Client', 'Lawyer', 'Admin']), async (req, res) => {
+// --- CONTROLLER LOGIC ---
+
+// POST /api/cases - Create a new case
+const createCase = async (req, res) => {
   const { complainantDetails, offenseDetails, accusedPersons, witnesses, caseNarrative } = req.body;
   const clientId = req.user.id; 
 
@@ -78,7 +78,6 @@ router.post("/", authorize(['Client', 'Lawyer', 'Admin']), async (req, res) => {
         case_type: caseNarrative.caseType,
         description: caseNarrative.incidentDetails,
         status: 'Submitted',
-        // Store all the rich, structured data in our new JSON field
         full_details: {
           complainant: complainantDetails,
           offense: offenseDetails,
@@ -98,45 +97,33 @@ router.post("/", authorize(['Client', 'Lawyer', 'Admin']), async (req, res) => {
     console.error("Error submitting case:", error);
     res.status(500).json({ error: "Failed to submit case" });
   }
-});
+};
 
-// GET /api/cases - API to fetch all cases
-// --- CHANGE #2: We now specify that ONLY 'Admin' role can access this route ---
-router.get("/", authorize(['Admin']), async (req, res) => {
+// GET /api/cases - Fetch ALL cases (for Admins)
+const getAllCases = async (req, res) => {
   try {
-    // --- CHANGE #3: The old "if (req.user.role !== 'Admin')" check is NO LONGER NEEDED here ---
-    // The middleware handles the security check for us.
-
     const allCases = await prisma.case.findMany({
-      orderBy: {
-        created_at: 'desc'
-      },
+      orderBy: { created_at: 'desc' },
       include: {
         participants: {
-          include: {
-            user: {
-              select: { name: true, email: true }
-            }
-          }
+          include: { user: { select: { name: true, email: true } } }
         }
       }
     });
     res.status(200).json(allCases);
   } catch (error) {
-    console.error("Error fetching cases with Prisma:", error);
-    res.status(500).json({ error: "Failed to fetch cases" });
+    console.error("Error fetching all cases:", error);
+    res.status(500).json({ error: "Failed to fetch all cases" });
   }
-});
+};
 
-// --- NEW FEATURE: A route for users to get only their own cases ---
-router.get("/my-cases", authorize(['Client', 'Lawyer', 'Admin']), async (req, res) => {
+// GET /api/cases/my-cases - Fetch cases for the logged-in user
+const getMyCases = async (req, res) => {
   const userId = req.user.id;
   try {
     const userCases = await prisma.case.findMany({
       where: {
-        participants: {
-          some: { user_id: userId } // Prisma query to find cases where the user is a participant
-        }
+        participants: { some: { user_id: userId } }
       },
       orderBy: { created_at: 'desc' },
       include: {
@@ -148,33 +135,104 @@ router.get("/my-cases", authorize(['Client', 'Lawyer', 'Admin']), async (req, re
      console.error("Error fetching user's cases:", error);
      res.status(500).json({ error: "Failed to fetch your cases" });
   }
-});
+};
 
-
-// PUT /api/cases/:id - API to update case status
-// --- CHANGE #4: We now specify that ONLY 'Admin' role can access this route ---
-router.put("/:id", authorize(['Admin']), async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
+// GET /api/cases/:id - Get a single case by its ID
+const getCaseById = async (req, res) => {
+  const caseId = parseInt(req.params.id);
+  const user = req.user;
 
   try {
-    // --- CHANGE #5: The old "if (req.user.role !== 'Admin')" check is also removed from here ---
-    
+    const caseData = await prisma.case.findUnique({
+      where: { id: caseId },
+      include: {
+        participants: {
+          include: { user: { select: { id: true, name: true } } }
+        },
+        fir: true,
+      }
+    });
+
+    if (!caseData) {
+      return res.status(404).json({ message: 'Case not found.' });
+    }
+
+    const isParticipant = caseData.participants.some(p => p.user_id === user.id);
+    if (user.role !== 'Admin' && !isParticipant) {
+      return res.status(403).json({ message: 'Forbidden: You do not have access to this case.' });
+    }
+
+    res.status(200).json(caseData);
+  } catch (error) {
+    console.error("Error fetching single case:", error);
+    res.status(500).json({ message: "Server error while fetching case." });
+  }
+};
+
+// PUT /api/cases/:id - Update case status (for Admins)
+const updateCaseStatus = async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  try {
     const updatedCase = await prisma.case.update({
       where: { id: parseInt(id) },
-      data: { status }, // Note: Prisma expects the ENUM format, e.g., 'In_Court'
+      data: { status },
     });
     res.status(200).json(updatedCase);
   } catch (error) {
-    console.error("Error updating case status with Prisma:", error);
+    console.error("Error updating case status:", error);
     res.status(500).json({ error: "Failed to update case status" });
   }
-});
+};
 
-// --- NEW ROUTE ---
-// POST /api/cases/:id/generate-fir - Generate an FIR document for a case.
-// The user must be the petitioner of the case.
-router.post("/:id/generate-fir", authorize(['Client', 'Lawyer', 'Admin']), generateFirPdf); // 👈 2. Add the new route
+// --- NEW FUNCTION: Update investigation details for a case ---
+const updateInvestigationDetails = async (req, res) => {
+  const caseId = parseInt(req.params.id);
+  const user = req.user;
+  const { fir_number, police_station, investigating_officer, io_contact, status } = req.body;
+
+  try {
+    const caseAccess = await prisma.case.findFirst({
+      where: { 
+        id: caseId,
+        participants: { some: { user_id: user.id } }
+      }
+    });
+
+    if (user.role !== 'Admin' && !caseAccess) {
+      return res.status(403).json({ message: 'Forbidden: You do not have access to update this case.' });
+    }
+
+    const [, updatedCase] = await prisma.$transaction([
+      prisma.fIR.upsert({
+        where: { case_id: caseId },
+        update: { fir_number, police_station, investigating_officer, io_contact },
+        create: { case_id: caseId, fir_number, police_station, investigating_officer, io_contact }
+      }),
+      prisma.case.update({
+        where: { id: caseId },
+        data: { status }
+      })
+    ]);
+
+    res.status(200).json(updatedCase);
+  } catch (error) {
+    console.error("Error updating investigation details:", error);
+    res.status(500).json({ message: 'Server error while updating details.' });
+  }
+};
+
+// --- ROUTE DEFINITIONS ---
+
+router.post("/", authorize(['Client', 'Lawyer', 'Admin']), createCase);
+router.get("/", authorize(['Admin']), getAllCases);
+router.get("/my-cases", authorize(['Client', 'Lawyer', 'Admin']), getMyCases);
+router.get("/:id", authorize(['Client', 'Lawyer', 'Admin']), getCaseById);
+router.put("/:id", authorize(['Admin']), updateCaseStatus); // Note: This is for general status updates by an Admin
+router.post("/:id/generate-fir", authorize(['Client', 'Lawyer', 'Admin']), generateFirPdf);
+
+// --- NEW ROUTE for updating all investigation details ---
+router.put('/:id/investigation', authorize(['Client', 'Lawyer', 'Admin']), updateInvestigationDetails);
 
 
 module.exports = router;

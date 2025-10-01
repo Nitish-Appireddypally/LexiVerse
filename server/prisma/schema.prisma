@@ -30,7 +30,11 @@ enum CaseParticipantRole {
 enum CaseStatus {
   Draft
   Submitted
-  FIR_Filed
+  FIR_Filed                 // <-- This was the missing value
+  FIR_Accepted
+  Investigation_In_Progress
+  Chargesheet_Filed
+  Closure_Report_Filed
   In_Court
   Resolved
   Closed
@@ -174,8 +178,9 @@ model FIR {
   fir_number            String?
   police_station        String?
   investigating_officer String?
+  io_contact            String?  // 👈 ADD THIS LINE
   receipt_url           String?
-  status                String   @default("Drafted")
+  // status                String   @default("Drafted") // 👈 REMOVE THIS LINE
 
   case_id Int @unique
   case    Case @relation(fields: [case_id], references: [id])
