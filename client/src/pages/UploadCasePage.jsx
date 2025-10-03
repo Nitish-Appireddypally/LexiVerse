@@ -111,15 +111,17 @@ import FileCase from "../components/FileCase/FileCase";
 import SubmissionSuccess from "../components/FileCase/SubmissionSuccess";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios"; 
 
 const UploadCasePage = () => {
   const [formData, setFormData] = useState({
-    userInfo: JSON.parse(localStorage.getItem("userInfo")) || {},
-    caseType: "",
-    caseDetails: {},
-    evidenceFiles: [],
+    complainantDetails: {},
+    offenseDetails: {},
+    accusedPersons: [],
+    witnesses: [],
+    caseNarrative: {},
+    evidence: [],
   });
-
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
@@ -135,40 +137,43 @@ const UploadCasePage = () => {
     localStorage.setItem("caseDraft", JSON.stringify(updatedData));
   };
 
+  // This is now the ONLY function that makes the API call
   const handleSubmit = async () => {
     try {
-      const { userInfo, caseType, caseDetails, evidenceFiles } = formData;
-      const caseTitle = caseType;
-      const data = { caseTitle, userInfo, caseDetails, evidenceFiles };
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error("Authentication error. Please log in again.");
+        return;
+      }
 
-      const response = await fetch("http://localhost:5050/api/cases", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      // We exclude the 'evidence' files array for now
+      const { evidence, ...payload } = formData;
+
+      const response = await axios.post("http://localhost:5050/api/cases", payload, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
       });
 
-      if (!response.ok) throw new Error("Failed to submit");
-
-      const responseData = await response.json();
-      console.log("Submitted case:", responseData);
-
+      console.log("Submitted case:", response.data);
       setSubmitted(true);
       toast.success("Your case has been submitted successfully!");
       localStorage.removeItem("caseDraft");
+
     } catch (error) {
       console.error("Submission failed:", error);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
+      // Re-throw the error so the child component knows to stop its loading spinner
+      throw error; 
     }
   };
 
   return (
-    // This structure now matches your DashboardHome for consistency
     <div className="flex bg-[#F9FAFB] min-h-screen">
       <Sidebar />
       <ToastContainer position="top-right" autoClose={5000} />
 
-      {/* This single div is now the main scrollable container */}
-      <div className="ml-64 flex-1 p-6 overflow-y-auto">
+      <div className="ml-64 flex-1 p-6 lg:p-8 overflow-y-auto">
         <Header />
         
         <main className="mt-8">
@@ -184,11 +189,10 @@ const UploadCasePage = () => {
                   Please provide the following details accurately to generate a professional FIR draft.
                 </p>
               </div>
-
               <FileCase
                 data={formData}
                 update={updateStepData}
-                onSubmit={handleSubmit}
+                onSubmit={handleSubmit} // We pass our single source of truth down
               />
             </div>
           )}
@@ -197,7 +201,5 @@ const UploadCasePage = () => {
     </div>
   );
 };
-
-
 
 export default UploadCasePage;

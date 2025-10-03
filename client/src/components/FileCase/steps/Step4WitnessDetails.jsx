@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Step4WitnessDetails = ({ data, update, onNext, onBack }) => {
+const Step4WitnessDetails = ({ data = [], update, onNext, onBack }) => {
     const handleWitnessChange = (index, event) => {
     const newWitnesses = [...data];
     newWitnesses[index][event.target.name] = event.target.value;

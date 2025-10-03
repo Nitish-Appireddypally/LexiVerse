@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 
-const Step2OffenseDetails = ({ data, update, onNext, onBack }) => {
+const Step2OffenseDetails = ({ data = {}, update, onNext, onBack }) => {
   const [details, setDetails] = useState({
     offenseDate: data.offenseDate || '',
     offenseTime: data.offenseTime || '',
     placeOfOffense: data.placeOfOffense || '',
     delayReason: data.delayReason || '',
   });
+
 
   const handleChange = (e) => {
     setDetails(prev => ({ ...prev, [e.target.name]: e.target.value }));

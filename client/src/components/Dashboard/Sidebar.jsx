@@ -17,7 +17,6 @@ const menuItems = [
   { name: "Cases", icon: <FaGavel />, route: "/cases" },
   { name: "Find a Lawyer", icon: <FaSearch />, route: "/find-lawyer" }, // 👈 ADD THIS LINE
   { name: "Documents", icon: <FaFileAlt />, route: "/documents" },
-  { name: "Documents", icon: <FaFileAlt />, route: "/documents" },
   { name: "Research", icon: <FaBrain />, route: "/research" },
   { name: "AI Drafting", icon: <FaRobot />, route: "/drafting" },
   { name: "Analytics", icon: <FaChartPie />, route: "/analytics" },

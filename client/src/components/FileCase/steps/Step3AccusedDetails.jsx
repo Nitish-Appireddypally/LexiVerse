@@ -1,6 +1,7 @@
 import React from 'react';
 
-const Step3AccusedDetails = ({ data, update, onNext, onBack }) => {
+// We add `data = []` to provide a default empty array
+const Step3AccusedDetails = ({ data = [], update, onNext, onBack }) => {
   const handleAccusedChange = (index, event) => {
     const newAccused = [...data];
     newAccused[index][event.target.name] = event.target.value;
@@ -8,7 +9,9 @@ const Step3AccusedDetails = ({ data, update, onNext, onBack }) => {
   };
 
   const handleAddAccused = () => {
-    update([...data, { name: '', address: '' }]);
+    // Ensure we add to an array, even if the initial prop was nullish
+    const currentData = data || [];
+    update([...currentData, { name: '', address: '' }]);
   };
 
   const handleRemoveAccused = (index) => {
@@ -21,6 +24,7 @@ const Step3AccusedDetails = ({ data, update, onNext, onBack }) => {
       <h2 className="text-xl font-semibold text-gray-800">Step 3: Accused Person(s) Details</h2>
       <p className="text-sm text-gray-500">List all known individuals responsible for the offense. If unknown, leave blank.</p>
 
+      {/* This map is now safe because 'data' will always be an array */}
       {data.map((accused, index) => (
         <div key={index} className="p-4 border border-gray-200 rounded-lg space-y-4 relative">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -5,7 +5,7 @@ const caseTypes = [
   "Consumer Complaint", "Cyber Crime", "Labor/Employment", "Contract Breach"
 ];
 
-const Step5CaseNarrative = ({ data, update, onNext, onBack }) => {
+const Step5CaseNarrative = ({ data = {}, update, onNext, onBack }) => {
   const [narrative, setNarrative] = useState({
     caseType: data.caseType || caseTypes[0],
     title: data.title || '',

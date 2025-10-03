@@ -81,8 +81,14 @@ const LawyerDashboard = () => {
   // --- END: CORRECTED FUNCTION ---
   return (
     <div className="flex bg-[#F9FAFB] min-h-screen">
-      <LawyerSidebar />
-      <div className="p-6 flex-1 flex flex-col">
+      {/* --- START: CORRECTED LAYOUT --- */}
+      {/* This wrapper div makes the sidebar fixed, just like in DashboardHome.jsx */}
+      <div className="w-64 fixed top-0 left-0 h-full z-50">
+        <LawyerSidebar />
+      </div>
+
+      {/* This content div is pushed to the right and scrolls independently */}
+      <div className="ml-64 flex-1 flex flex-col p-6">
         <Header />
         <main className="flex-1 p-8 overflow-y-auto">
           <h1 className="text-3xl font-bold text-[#1F2937]">Lawyer Dashboard</h1>

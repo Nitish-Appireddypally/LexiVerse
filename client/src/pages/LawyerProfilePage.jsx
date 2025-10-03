@@ -71,12 +71,13 @@ const LawyerProfilePage = () => {
 
   const selectStyles = { /* Styling for react-select */ };
 
-  if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="flex bg-[#F9FAFB] min-h-screen">
-      <LawyerSidebar />
-      <div className="p-6 flex-1 flex flex-col">
+    <div className="flex bg-[#F9FAFB] h-screen overflow-hidden">
+      <div className="w-64 fixed top-0 left-0 h-full z-50">
+        <LawyerSidebar />
+      </div>
+      <div className="ml-64 flex-1 flex flex-col p-6">
         <Header />
         <main className="flex-1 p-8">
           <h1 className="text-3xl font-bold text-[#1F2937] mb-6">Manage Your Professional Profile</h1>

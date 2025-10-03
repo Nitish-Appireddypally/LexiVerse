@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from '../components/Dashboard/Sidebar';
+import LawyerSidebar from '../components/Dashboard/LawyerSidebar';
 import Header from '../components/Dashboard/Header';
 import { FaCheckCircle, FaCircle, FaEdit, FaTimes, FaUserTie } from 'react-icons/fa';
 
@@ -22,6 +23,7 @@ const CaseDetailPage = () => {
     const [caseData, setCaseData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
 
     const [isUpdating, setIsUpdating] = useState(false);
     const [editSection, setEditSection] = useState(null);
@@ -31,16 +33,25 @@ const CaseDetailPage = () => {
         setIsLoading(true);
         setEditSection(null);
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:5050/api/cases/${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` },
-            });
-            setCaseData(response.data);
-        } catch (err) {
-            setError(err.response?.data?.message || err.message);
-        } finally {
-            setIsLoading(false);
-        }
+                const token = localStorage.getItem('token');
+                if (!token) throw new Error('Not authenticated');
+
+                // --- START: CORRECTED LOGIC ---
+                // Define the config object once and reuse it for all requests
+                const config = { headers: { Authorization: `Bearer ${token}` } };
+                
+                const userRes = await axios.get('http://localhost:5050/api/users/me', config);
+                setCurrentUser(userRes.data);
+
+                const caseRes = await axios.get(`http://localhost:5050/api/cases/${id}`, config);
+                setCaseData(caseRes.data);
+                // --- END: CORRECTED LOGIC ---
+                
+            } catch (err) {
+                setError(err.response?.data?.message || err.message);
+            } finally {
+                setIsLoading(false);
+            }
     };
 
     useEffect(() => {
@@ -119,12 +130,17 @@ const CaseDetailPage = () => {
 
 
     return (
-        <div className="flex bg-[#F9FAFB]">
-            <Sidebar />
-            <div className="ml-64 p-6 w-full flex flex-col h-screen">
+        <div className="flex bg-[#F9FAFB] h-screen overflow-hidden">
+            {currentUser.role === 'Lawyer' ? <LawyerSidebar /> : <Sidebar />}
+            {/* We apply ml-64 conditionally based on the user role */}
+            <div className={`flex-1 flex flex-col ${currentUser.role !== 'Lawyer' ? 'ml-64' : ''}`}>
+            {/* --- END: FINAL CORRECTED LAYOUT --- */}
+
                 <Header />
-                <main className="flex-1 p-8 overflow-y-auto">
-                    <Link to="/cases" className="text-sm text-blue-600 hover:underline mb-4 inline-block">&larr; Back to Case List</Link>
+                <main className=" flex-1 p-8 overflow-y-auto">
+                    <Link to={currentUser.role === 'Lawyer' ? '/lawyer/cases' : '/cases'} className="text-sm text-blue-600 hover:underline mb-4 inline-block">
+                        &larr; Back to Case List
+                    </Link>
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h1 className="text-4xl font-bold text-[#1F2937]">{caseData.title}</h1>

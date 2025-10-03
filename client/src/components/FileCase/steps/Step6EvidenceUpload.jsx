@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Step6EvidenceUpload = ({ data, update, onNext, onBack }) => {
+const Step6EvidenceUpload = ({ data=[], update, onNext, onBack }) => {
   
   const handleFileChange = (e) => {
     // In a real app, we would upload files here and store URLs.

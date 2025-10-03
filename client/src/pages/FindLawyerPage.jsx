@@ -109,7 +109,7 @@ const FindLawyerPage = () => {
   return (
     <div className="flex bg-[#F9FAFB] min-h-screen">
       <Sidebar />
-      <div className="ml-64 flex-1 flex flex-col">
+      <div className="ml-64 p-6 flex-1 flex flex-col">
         <Header />
         <main className="flex-1 p-8">
           <h1 className="text-3xl font-bold text-[#1F2937]">Find a Legal Professional</h1>
