@@ -46,6 +46,7 @@ import LawyerProfilePage from './pages/LawyerProfilePage';
 import SignupLawyer from "./components/Auth/SignupLawyer";
 import FindLawyerPage from "./pages/FindLawyerPage";
 import LawyerActiveCasesPage from "./pages/LawyerActiveCasesPage";
+import UserProfilePage from './pages/UserProfilePage'; 
 
 // Toast Notifications
 import { ToastContainer } from "react-toastify";
@@ -66,6 +67,7 @@ function App() {
 
         {/* Dashboard Entry Point */}
         <Route path="/dashboard" element={<DashboardHome />} />
+        <Route path="/profile" element={<UserProfilePage />} />
 
         <Route path="/chatbot" element={<ChatbotPage />} />
         <Route path="/user/dashboard" element={<UserDashboard />} />

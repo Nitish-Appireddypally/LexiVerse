@@ -79,6 +79,14 @@ model User {
   role          UserRole        @default(Client)
   created_at    DateTime        @default(now())
 
+  // --- START: NEW PROFILE FIELDS ---
+  father_name     String?
+  date_of_birth   DateTime?
+  gender          String?  // e.g., "Male", "Female", "Other"
+  aadhar_number   String?  @unique
+  profile_pic_url String?
+  // --- END: NEW PROFILE FIELDS ---
+
   lawyer_profile    LawyerProfile?
   cases_as_participant CaseParticipant[]
   chat_histories    ChatHistory[]

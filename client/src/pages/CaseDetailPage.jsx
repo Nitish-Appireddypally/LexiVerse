@@ -133,7 +133,7 @@ const CaseDetailPage = () => {
         <div className="flex bg-[#F9FAFB] h-screen overflow-hidden">
             {currentUser.role === 'Lawyer' ? <LawyerSidebar /> : <Sidebar />}
             {/* We apply ml-64 conditionally based on the user role */}
-            <div className={`flex-1 flex flex-col ${currentUser.role !== 'Lawyer' ? 'ml-64' : ''}`}>
+            <div className={`flex-1 flex flex-col ${currentUser.role !== 'Lawyer' ? 'ml-64 p-6' : 'p-6'}`}>
             {/* --- END: FINAL CORRECTED LAYOUT --- */}
 
                 <Header />
@@ -143,7 +143,7 @@ const CaseDetailPage = () => {
                     </Link>
                     <div className="flex justify-between items-start mb-6">
                         <div>
-                            <h1 className="text-4xl font-bold text-[#1F2937]">{caseData.title}</h1>
+                            <h1 className="text-2xl font-bold text-[#1F2937]">{caseData.title}</h1>
                             <p className="text-gray-500 mt-1">Case ID: #{caseData.id}</p>
                         </div>
                         <span className="text-sm font-bold py-1 px-3 bg-blue-100 text-blue-800 rounded-full">{caseData.status.replace(/_/g, ' ')}</span>

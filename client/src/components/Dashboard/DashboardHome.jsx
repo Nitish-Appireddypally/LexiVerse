@@ -17,7 +17,7 @@ const DashboardHome = () => {
       <div className="ml-64 w-full min-h-screen bg-gray-50 overflow-y-auto">
         <div className="px-6 py-6">
           <Header />
-          <h1 className="text-2xl font-bold text-gray-800 mt-6">LexiVerse Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mt-6 ml-6">LexiVerse Dashboard</h1>
           <FeatureCards />
         </div>
         <LexiBotFloating />

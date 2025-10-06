@@ -14,13 +14,13 @@ import {
 
 const menuItems = [
   { name: "Dashboard", icon: <FaHome />, route: "/dashboard" },
-  { name: "Cases", icon: <FaGavel />, route: "/cases" },
+  { name: "My Cases", icon: <FaGavel />, route: "/cases" },
   { name: "Find a Lawyer", icon: <FaSearch />, route: "/find-lawyer" }, // 👈 ADD THIS LINE
+  { name: "Profile", icon: <FaUserCog />, route: "/profile" },
   { name: "Documents", icon: <FaFileAlt />, route: "/documents" },
   { name: "Research", icon: <FaBrain />, route: "/research" },
   { name: "AI Drafting", icon: <FaRobot />, route: "/drafting" },
   { name: "Analytics", icon: <FaChartPie />, route: "/analytics" },
-  { name: "Profile", icon: <FaUserCog />, route: "/profile" },
 ];
 
 const Sidebar = () => {
@@ -46,7 +46,7 @@ const Sidebar = () => {
             }
           >
             <span className="text-lg">{item.icon}</span>
-            <span className="text-md">{item.name}</span>
+            <span className="text-sm">{item.name}</span>
           </NavLink>
         ))}
       </nav>
