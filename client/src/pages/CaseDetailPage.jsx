@@ -130,14 +130,14 @@ const CaseDetailPage = () => {
 
 
     return (
-        <div className="flex bg-[#F9FAFB] h-screen overflow-hidden">
+        <div className="flex bg-[#F9FAFB] h-screen">
             {currentUser.role === 'Lawyer' ? <LawyerSidebar /> : <Sidebar />}
             {/* We apply ml-64 conditionally based on the user role */}
             <div className={`flex-1 flex flex-col ${currentUser.role !== 'Lawyer' ? 'ml-64 p-6' : 'p-6'}`}>
             {/* --- END: FINAL CORRECTED LAYOUT --- */}
 
                 <Header />
-                <main className=" flex-1 p-8 overflow-y-auto">
+                <main className=" flex-1 p-8 h-[70vh]">
                     <Link to={currentUser.role === 'Lawyer' ? '/lawyer/cases' : '/cases'} className="text-sm text-blue-600 hover:underline mb-4 inline-block">
                         &larr; Back to Case List
                     </Link>
@@ -162,27 +162,55 @@ const CaseDetailPage = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
-                        {/* Left Column */}
-                        <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border border-gray-200 ">
-                          {/* ... (Left column content remains the same) ... */}
-                          <h2 className="text-2xl font-semibold text-[#1F2937] mb-4">Case Overview</h2>
-                          <div className="border-t border-gray-200">
-                            <dl>
-                              <div className="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"><dt className="text-sm font-bold text-gray-600">Complainant</dt></div>
-                              <div className="bg-white px-4 py-4 sm:px-6"><DetailItem label="Name" value={complainant?.name} /></div>
-                              <div className="bg-white px-4 py-4 sm:px-6"><DetailItem label="Father's/Husband's Name" value={complainant?.fatherName} /></div>
-                              <div className="bg-white px-4 py-4 sm:px-6"><DetailItem label="Address" value={complainant?.address} /></div>
+                    {/* Main grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-280px)]">
+          {/* Left column with scroll */}
+          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border border-gray-200 overflow-y-auto">
+            <h2 className="text-2xl font-semibold text-[#1F2937] mb-4">Case Overview</h2>
+            <div className="border-t border-gray-200">
+              <dl>
+                <div className="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-bold text-gray-600">Complainant</dt>
+                </div>
+                <div className="bg-white px-4 py-4 sm:px-6">
+                  <DetailItem label="Name" value={caseData.full_details?.complainant?.name} />
+                </div>
+                <div className="bg-white px-4 py-4 sm:px-6">
+                  <DetailItem label="Father's/Husband's Name" value={caseData.full_details?.complainant?.fatherName} />
+                </div>
+                <div className="bg-white px-4 py-4 sm:px-6">
+                  <DetailItem label="Address" value={caseData.full_details?.complainant?.address} />
+                </div>
 
-                              <div className="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"><dt className="text-sm font-bold text-gray-600">Offense</dt></div>
-                              <div className="bg-white px-4 py-4 sm:px-6"><DetailItem label="Date & Time" value={offense?.offenseDate ? `${new Date(offense.offenseDate).toLocaleDateString()} at ${offense.offenseTime}` : 'N/A'} /></div>
-                              <div className="bg-white px-4 py-4 sm:px-6"><DetailItem label="Place of Offense" value={offense?.placeOfOffense} /></div>
+                <div className="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-bold text-gray-600">Offense</dt>
+                </div>
+                <div className="bg-white px-4 py-4 sm:px-6">
+                  <DetailItem
+                    label="Date & Time"
+                    value={
+                      caseData.full_details?.offense?.offenseDate
+                        ? `${new Date(caseData.full_details.offense.offenseDate).toLocaleDateString()} at ${caseData.full_details.offense.offenseTime}`
+                        : 'N/A'
+                    }
+                  />
+                </div>
+                <div className="bg-white px-4 py-4 sm:px-6">
+                  <DetailItem label="Place of Offense" value={caseData.full_details?.offense?.placeOfOffense} />
+                </div>
 
-                              <div className="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"><dt className="text-sm font-bold text-gray-600">Narrative</dt></div>
-                              <div className="bg-white px-4 py-5 sm:px-6"><p className="text-gray-700 leading-relaxed">{caseData.description || 'No narrative provided.'}</p></div>
-                            </dl>
-                          </div>
-                        </div>
+                <div className="bg-gray-50 px-4 py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-bold text-gray-600">Narrative</dt>
+                </div>
+                <div className="bg-white px-4 py-5 sm:px-6">
+                  <p className="text-gray-700 leading-relaxed">
+                    {caseData.description || 'No narrative provided.'}
+                  </p>
+                </div>
+              </dl>
+            </div>
+          </div>
+
 
                         {/* Right Column */}
                         <div className="lg:col-span-1">

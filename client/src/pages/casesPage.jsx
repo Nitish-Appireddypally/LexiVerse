@@ -111,129 +111,133 @@ const CasesPage = () => {
   };
 
   return (
-    <div className="flex bg-[#F9FAFB]">
-      <Sidebar />
-      <div className="ml-64 p-6 w-full flex flex-col h-screen">
-        <Header />
-        <main className="flex-1 p-6">
-          <h1 className="text-3xl font-bold text-[#1F2937] mb-6">
-            Case Management
-          </h1>
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-            {isLoading && (
-              <p className="p-6 text-center text-gray-500">Loading cases...</p>
-            )}
-            {error && (
-              <p className="p-6 text-center text-red-500">Error: {error}</p>
-            )}
-            {!isLoading && !error && (
-              <table className="w-full text-left">
-                 <thead className="bg-[#1F2937] text-white">
-                  <tr>
-                    <th className="p-4 font-semibold">Case Title</th>
-                    <th className="p-4 font-semibold">Petitioner</th>
-                    <th className="p-4 font-semibold">Assigned Counsel</th>
-                    <th className="p-4 font-semibold">Submission Date</th>
-                    <th className="p-4 font-semibold">Status</th>
-                    <th className="p-4 font-semibold text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cases.length > 0 ? (
-                    cases.map((caseItem) => {
-                      // Find the accepted lawyer in the participants list
-                      const assignedLawyer = caseItem.participants.find(
-                        (p) =>
-                          p.role_in_case === "LeadCounsel" &&
-                          p.status === "Accepted"
+  <div className="flex bg-[#F9FAFB]">
+    <Sidebar />
+    <div className="ml-64 p-6 w-full flex flex-col h-screen"> {/* Reduced padding */}
+      <Header />
+      <main className="flex-1 p-4 overflow-y-auto"> {/* Reduced padding */}
+        <h1 className="text-2xl font-semibold text-[#1F2937] mb-4">
+          Case Management
+        </h1>
+        <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+          {isLoading && (
+            <p className="p-4 text-center text-gray-500 text-sm">
+              Loading cases...
+            </p>
+          )}
+          {error && (
+            <p className="p-4 text-center text-red-500 text-sm">
+              Error: {error}
+            </p>
+          )}
+          {!isLoading && !error && (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-[#1F2937] text-white text-sm">
+                <tr>
+                  <th className="px-3 py-3 font-medium">Case Title</th>
+                  <th className="px-3 py-3 font-medium">Petitioner</th>
+                  <th className="px-3 py-3 font-medium">Assigned Counsel</th>
+                  <th className="px-3 py-3 font-medium">Submission Date</th>
+                  <th className="px-3 py-3 font-medium">Status</th>
+                  <th className="px-3 py-3 font-medium text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cases.length > 0 ? (
+                  cases.map((caseItem) => {
+                    const assignedLawyer = caseItem.participants.find(
+                      (p) =>
+                        p.role_in_case === "LeadCounsel" &&
+                        p.status === "Accepted"
+                    );
+
+                    const isParticipant =
+                      currentUser &&
+                      caseItem.participants.some(
+                        (p) => p.user_id === currentUser.id
                       );
 
-                      // Logic to check if the current user is a participant in this case
-                      const isParticipant =
-                        currentUser &&
-                        caseItem.participants.some(
-                          (p) => p.user_id === currentUser.id
-                        );
+                    return (
+                      <tr
+                        key={caseItem.id}
+                        className="border-b border-gray-200 hover:bg-gray-50"
+                      >
+                        <td className="px-3 py-3 font-medium text-gray-800">
+                          <Link
+                            to={`/case/${caseItem.id}`}
+                            className="hover:underline hover:text-blue-600"
+                          >
+                            {caseItem.title}
+                          </Link>
+                        </td>
+                        <td className="px-3 py-3 text-gray-600">
+                          {caseItem.participants[0]?.user?.name || "N/A"}
+                        </td>
+                        <td className="px-3 py-3 font-semibold text-green-700">
+                          {assignedLawyer?.user?.name || "Pending"}
+                        </td>
+                        <td className="px-3 py-3 text-gray-600">
+                          {formatDate(caseItem.created_at)}
+                        </td>
+                        <td className="px-3 py-3">
+                          <span
+                            className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusBadge(
+                              caseItem.status
+                            )}`}
+                          >
+                            {caseItem.status.replace("_", " ")}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              className="text-gray-500 hover:text-[#1F2937] transition"
+                              title="View Details"
+                            >
+                              <FaEye size={14} />
+                            </button>
 
-                      return (
-                        <tr
-                          key={caseItem.id}
-                          className="border-b border-gray-200 hover:bg-gray-50"
-                        >
-                          <td className="p-4 font-medium text-gray-800">
-                            <Link
-                              to={`/case/${caseItem.id}`}
-                              className="hover:underline hover:text-blue-600"
-                            >
-                              {caseItem.title}
-                            </Link>
-                          </td>
-                          <td className="p-4 text-gray-600">
-                            {caseItem.participants[0]?.user?.name || "N/A"}
-                          </td>
-                          {/* 👇 NEW COLUMN'S DATA 👇 */}
-                          <td className="p-4 font-semibold text-green-700">
-                            {assignedLawyer?.user?.name || "Pending"}
-                          </td>
-                          <td className="p-4 text-gray-600">
-                            {formatDate(caseItem.created_at)}
-                          </td>
-                          <td className="p-4">
-                            <span
-                              className={`px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadge(
-                                caseItem.status
-                              )}`}
-                            >
-                              {caseItem.status.replace("_", " ")}
-                            </span>
-                          </td>
-                          <td className="p-4 text-center">
-                            <div className="flex items-center justify-center gap-4">
+                            {isParticipant && (
                               <button
-                                className="text-gray-500 hover:text-[#1F2937] transition"
-                                title="View Details"
+                                onClick={() => handleGenerateFir(caseItem.id)}
+                                disabled={generatingId === caseItem.id}
+                                className="flex items-center gap-1 text-[11px] font-semibold py-1 px-2 bg-[#1F2937] text-white rounded hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-wait transition"
+                                title="Generate FIR PDF"
                               >
-                                <FaEye size={18} />
+                                {generatingId === caseItem.id ? (
+                                  <span>...</span>
+                                ) : (
+                                  <>
+                                    <FaFilePdf size={12} />
+                                    <span>FIR</span>
+                                  </>
+                                )}
                               </button>
-
-                              {/* --- FINAL: Conditionally render the styled button --- */}
-                              {isParticipant && (
-                                <button
-                                  onClick={() => handleGenerateFir(caseItem.id)}
-                                  disabled={generatingId === caseItem.id}
-                                  className="flex items-center gap-2 text-xs font-bold py-1 px-3 bg-[#1F2937] text-white rounded-md hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-wait transition"
-                                  title="Generate FIR PDF"
-                                >
-                                  {generatingId === caseItem.id ? (
-                                    <span>Generating...</span>
-                                  ) : (
-                                    <>
-                                      <FaFilePdf />
-                                      <span>FIR</span>
-                                    </>
-                                  )}
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan="5" className="p-6 text-center text-gray-500">
-                        No cases found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </main>
-      </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="p-4 text-center text-gray-500 text-sm"
+                    >
+                      No cases found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </main>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default CasesPage;

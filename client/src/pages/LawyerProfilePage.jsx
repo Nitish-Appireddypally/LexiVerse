@@ -73,56 +73,110 @@ const LawyerProfilePage = () => {
 
 
   return (
-    <div className="flex bg-[#F9FAFB] h-screen overflow-hidden">
-      <div className="w-64 fixed top-0 left-0 h-full z-50">
-        <LawyerSidebar />
-      </div>
-      <div className="ml-64 flex-1 flex flex-col p-6">
-        <Header />
-        <main className="flex-1 p-8">
-          <h1 className="text-3xl font-bold text-[#1F2937] mb-6">Manage Your Professional Profile</h1>
-          <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 space-y-6">
-            
-            <h2 className="text-xl font-semibold text-gray-700 border-b pb-3">Professional Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div className="flex bg-[#F9FAFB] min-h-screen overflow-hidden">
+    {/* Sidebar */}
+    <div className="w-64 fixed top-0 left-0 h-full z-40">
+      <LawyerSidebar />
+    </div>
+
+    {/* Main content */}
+    <div className="ml-64 flex-1 flex flex-col p-6">
+      <Header />
+
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <h1 className="text-2xl md:text-3xl font-bold text-[#1F2937] mb-6">
+          Manage Your Professional Profile
+        </h1>
+
+        {isLoading ? (
+          <p className="text-center text-sm text-gray-500">Loading your profile...</p>
+        ) : (
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-lg shadow border border-gray-200 max-w-4xl mx-auto p-6 md:p-8 space-y-6"
+          >
+            {/* Section Header */}
+            <h2 className="text-lg font-semibold text-gray-700 border-b pb-3">
+              Professional Information
+            </h2>
+
+            {/* Bar ID and Experience */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Bar Council ID</label>
-                <input type="text" name="bar_council_id" value={profile.bar_council_id} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FBBF24] focus:border-[#FBBF24]" required />
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Bar Council ID
+                </label>
+                <input
+                  type="text"
+                  name="bar_council_id"
+                  value={profile.bar_council_id}
+                  onChange={handleChange}
+                  required
+                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FBBF24] focus:border-[#FBBF24] text-sm"
+                />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Years of Experience</label>
-                <input type="number" name="experience_years" value={profile.experience_years} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FBBF24] focus:border-[#FBBF24]" />
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Years of Experience
+                </label>
+                <input
+                  type="number"
+                  name="experience_years"
+                  value={profile.experience_years}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FBBF24] focus:border-[#FBBF24] text-sm"
+                />
               </div>
             </div>
 
+            {/* Specializations */}
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Specializations</label>
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Specializations
+              </label>
               <Select
                 isMulti
                 options={specializationOptions}
-                value={specializationOptions.filter(opt => profile.specializations?.includes(opt.value))}
+                value={specializationOptions.filter(opt =>
+                  profile.specializations?.includes(opt.value)
+                )}
                 onChange={handleSpecializationsChange}
-                // styles={selectStyles} // You can add custom styles here
                 className="text-sm"
               />
             </div>
 
+            {/* Biography */}
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Biography / Professional Summary</label>
-              <textarea name="bio" value={profile.bio} onChange={handleChange} rows="5" className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FBBF24] focus:border-[#FBBF24]" />
+              <label className="block text-sm font-medium text-gray-600 mb-1">
+                Biography / Professional Summary
+              </label>
+              <textarea
+                name="bio"
+                value={profile.bio}
+                onChange={handleChange}
+                rows="5"
+                className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#FBBF24] focus:border-[#FBBF24] text-sm"
+              />
             </div>
-            
+
+            {/* Save Button */}
             <div className="pt-4 text-right">
-              <button type="submit" disabled={isUpdating} className="py-2 px-6 bg-[#1F2937] text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 disabled:bg-gray-400">
+              <button
+                type="submit"
+                disabled={isUpdating}
+                className="py-2 px-6 bg-[#1F2937] text-white font-semibold rounded-md shadow hover:bg-gray-800 disabled:bg-gray-400 text-sm"
+              >
                 {isUpdating ? 'Saving...' : 'Save Profile'}
               </button>
             </div>
-
           </form>
-        </main>
-      </div>
+        )}
+      </main>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default LawyerProfilePage;
