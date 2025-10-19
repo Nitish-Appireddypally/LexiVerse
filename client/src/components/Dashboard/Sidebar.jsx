@@ -1,6 +1,7 @@
 // Sidebar.jsx
 import React from "react";
 import { NavLink } from "react-router-dom";
+import logo from "../../assets/logo.png";
 import {
   FaGavel,
   FaFileAlt,
@@ -11,6 +12,7 @@ import {
   FaSearch,
   FaHome,
 } from "react-icons/fa";
+import { GoLaw } from "react-icons/go";
 
 const menuItems = [
   { name: "Dashboard", icon: <FaHome />, route: "/dashboard" },
@@ -27,8 +29,9 @@ const Sidebar = () => {
   return (
     <div className="w-64 py-6 px-2 h-screen bg-[#1F2937] text-white shadow-xl flex flex-col fixed top-0 left-0 z-50 border-r border-gray-700">
       {/* Logo */}
-      <div className="flex items-center justify-center h-20 text-2xl font-bold text-[#FBBF24] tracking-wider border-b border-gray-700">
-        LexiVerse
+      <div className="flex items-center justify-center gap-2 text-[#FBBF24] text-xl m-5 font-serif font-semibold tracking-wide select-none">
+        <GoLaw className="text-3xl" />
+        <span>LexiVerse</span>
       </div>
 
       {/* Navigation */}
