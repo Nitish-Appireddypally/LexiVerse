@@ -46,7 +46,7 @@
 //       };
 
 //       // Make the API call to submit the case
-//       const response = await fetch("http://localhost:5050/api/cases", {
+//       const response = await fetch("https://lexiverse-backend.onrender.com/api/cases", {
 //         method: "POST",
 //         headers: {
 //           "Content-Type": "application/json",
@@ -138,7 +138,7 @@ const UploadCasePage = () => {
 
   //       // 2️⃣ Try loading AI insight
   //       const res = await axios.get(
-  //         "http://localhost:5050/api/ai-insights/latest",
+  //         "https://lexiverse-backend.onrender.com/api/ai-insights/latest",
   //         {
   //           headers: {
   //             Authorization: `Bearer ${token}`,
@@ -165,7 +165,7 @@ const UploadCasePage = () => {
   //     const token = localStorage.getItem("token");
 
   //     const res = await axios.get(
-  //       "http://localhost:5050/api/ai-insights/latest",
+  //       "https://lexiverse-backend.onrender.com/api/ai-insights/latest",
   //       {
   //         headers: {
   //           Authorization: `Bearer ${token}`,
@@ -194,7 +194,7 @@ const UploadCasePage = () => {
     const loadAIInsight = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5050/api/ai-insights/latest",
+          "https://lexiverse-backend.onrender.com/api/ai-insights/latest",
         );
 
         if (!response.data || !response.data.insight) return;
@@ -236,7 +236,7 @@ const UploadCasePage = () => {
       const { evidence, ...payload } = formData;
 
       const response = await axios.post(
-        "http://localhost:5050/api/cases",
+        "https://lexiverse-backend.onrender.com/api/cases",
         payload,
         {
           headers: {

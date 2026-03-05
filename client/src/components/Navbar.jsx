@@ -11,14 +11,33 @@ export default function Navbar() {
       <div className="text-2xl font-bold text-indigo-600">LexiVerse</div>
 
       <ul className="hidden md:flex space-x-8 text-gray-700 font-medium">
-        <li><a href="#features" className="hover:text-indigo-600">Features</a></li>
-        <li><a href="#how" className="hover:text-indigo-600">How It Works</a></li>
-        <li><a href="#testimonials" className="hover:text-indigo-600">Testimonials</a></li>
-        <li><a href="#footer" className="hover:text-indigo-600">Contact</a></li>
+        <li>
+          <a href="#features" className="hover:text-indigo-600">
+            Features
+          </a>
+        </li>
+        <li>
+          <a href="#how" className="hover:text-indigo-600">
+            How It Works
+          </a>
+        </li>
+        <li>
+          <a href="#testimonials" className="hover:text-indigo-600">
+            Testimonials
+          </a>
+        </li>
+        <li>
+          <a href="#footer" className="hover:text-indigo-600">
+            Contact
+          </a>
+        </li>
       </ul>
 
       <div>
-        <a href="/login" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300">
+        <a
+          href="/login"
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition duration-300"
+        >
           Get Started
         </a>
       </div>

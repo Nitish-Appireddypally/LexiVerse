@@ -15,13 +15,13 @@ const FileCase = ({ data, update, onSubmit }) => {
   const totalSteps = 7;
 
   const nextStep = () => {
-    if (currentStep < totalSteps) setCurrentStep(prev => prev + 1);
+    if (currentStep < totalSteps) setCurrentStep((prev) => prev + 1);
   };
 
   const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(prev => prev - 1);
+    if (currentStep > 1) setCurrentStep((prev) => prev - 1);
   };
-  
+
   // This function now calls the 'update' function passed down from the parent
   const updateFormData = (stepKey, stepData) => {
     update(stepKey, stepData);
@@ -30,20 +30,69 @@ const FileCase = ({ data, update, onSubmit }) => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        return <Step1ComplainantDetails data={data.complainantDetails} onNext={nextStep} update={stepData => updateFormData("complainantDetails", stepData)} />;
+        return (
+          <Step1ComplainantDetails
+            data={data.complainantDetails}
+            onNext={nextStep}
+            update={(stepData) =>
+              updateFormData("complainantDetails", stepData)
+            }
+          />
+        );
       case 2:
-        return <Step2OffenseDetails data={data.offenseDetails} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("offenseDetails", stepData)} />;
+        return (
+          <Step2OffenseDetails
+            data={data.offenseDetails}
+            onNext={nextStep}
+            onBack={prevStep}
+            update={(stepData) => updateFormData("offenseDetails", stepData)}
+          />
+        );
       case 3:
-        return <Step3AccusedDetails data={data.accusedPersons} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("accusedPersons", stepData)} />;
+        return (
+          <Step3AccusedDetails
+            data={data.accusedPersons}
+            onNext={nextStep}
+            onBack={prevStep}
+            update={(stepData) => updateFormData("accusedPersons", stepData)}
+          />
+        );
       case 4:
-        return <Step4WitnessDetails data={data.witnesses} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("witnesses", stepData)} />;
+        return (
+          <Step4WitnessDetails
+            data={data.witnesses}
+            onNext={nextStep}
+            onBack={prevStep}
+            update={(stepData) => updateFormData("witnesses", stepData)}
+          />
+        );
       case 5:
-        return <Step5CaseNarrative data={data.caseNarrative} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("caseNarrative", stepData)} />;
+        return (
+          <Step5CaseNarrative
+            data={data.caseNarrative}
+            onNext={nextStep}
+            onBack={prevStep}
+            update={(stepData) => updateFormData("caseNarrative", stepData)}
+          />
+        );
       case 6:
-        return <Step6EvidenceUpload data={data.evidence} onNext={nextStep} onBack={prevStep} update={stepData => updateFormData("evidence", stepData)} />;
+        return (
+          <Step6EvidenceUpload
+            data={data.evidence}
+            onNext={nextStep}
+            onBack={prevStep}
+            update={(stepData) => updateFormData("evidence", stepData)}
+          />
+        );
       case 7:
         // The final onSubmit function is passed to the last step
-        return <Step7ReviewSubmit data={data} onBack={prevStep} onSubmit={onSubmit} />; 
+        return (
+          <Step7ReviewSubmit
+            data={data}
+            onBack={prevStep}
+            onSubmit={onSubmit}
+          />
+        );
       default:
         return <SubmissionSuccess />;
     }
@@ -53,9 +102,7 @@ const FileCase = ({ data, update, onSubmit }) => {
     // The component is now just a simple container for the steps
     <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 md:p-10">
       <StepProgressBar currentStep={currentStep} totalSteps={totalSteps} />
-      <div className="mt-8">
-        {renderStep()}
-      </div>
+      <div className="mt-8">{renderStep()}</div>
     </div>
   );
 };

@@ -19,9 +19,9 @@
 //       if (token) {
 //         try {
 //           const config = { headers: { Authorization: `Bearer ${token}` } };
-//           const userRes = await axios.get('http://localhost:5050/api/users/me', config);
+//           const userRes = await axios.get('https://lexiverse-backend.onrender.com/api/users/me', config);
 //           setUser(userRes.data);
-//           const countRes = await axios.get('http://localhost:5050/api/notifications/unread-count', config);
+//           const countRes = await axios.get('https://lexiverse-backend.onrender.com/api/notifications/unread-count', config);
 //           setUnreadCount(countRes.data.count);
 //         } catch (error) {
 //           console.error("Failed to fetch header data.");
@@ -50,9 +50,9 @@
 //     const token = localStorage.getItem('token');
 //     const config = { headers: { Authorization: `Bearer ${token}` } };
 //     try {
-//       const res = await axios.get('http://localhost:5050/api/notifications', config);
+//       const res = await axios.get('https://lexiverse-backend.onrender.com/api/notifications', config);
 //       setNotifications(res.data);
-//       await axios.put('http://localhost:5050/api/notifications/mark-read', {}, config);
+//       await axios.put('https://lexiverse-backend.onrender.com/api/notifications/mark-read', {}, config);
 //       setUnreadCount(0);
 //     } catch (error) {
 //       console.error("Failed to fetch notifications");
@@ -62,7 +62,7 @@
 //       const token = localStorage.getItem('token');
 //       const config = { headers: { Authorization: `Bearer ${token}` } };
 //       try {
-//           const res = await axios.get('http://localhost:5050/api/notifications', config);
+//           const res = await axios.get('https://lexiverse-backend.onrender.com/api/notifications', config);
 //           setNotifications(res.data);
 //       } catch (error) {
 //           console.error("Failed to fetch notifications");
@@ -194,13 +194,13 @@ const Header = () => {
         try {
           const config = { headers: { Authorization: `Bearer ${token}` } };
           const userRes = await axios.get(
-            "http://localhost:5050/api/users/me",
-            config
+            "https://lexiverse-backend.onrender.com/api/users/me",
+            config,
           );
           setUser(userRes.data);
           const countRes = await axios.get(
-            "http://localhost:5050/api/notifications/unread-count",
-            config
+            "https://lexiverse-backend.onrender.com/api/notifications/unread-count",
+            config,
           );
           setUnreadCount(countRes.data.count);
         } catch (error) {
@@ -238,14 +238,14 @@ const Header = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       try {
         const res = await axios.get(
-          "http://localhost:5050/api/notifications",
-          config
+          "https://lexiverse-backend.onrender.com/api/notifications",
+          config,
         );
         setNotifications(res.data);
         await axios.put(
-          "http://localhost:5050/api/notifications/mark-read",
+          "https://lexiverse-backend.onrender.com/api/notifications/mark-read",
           {},
-          config
+          config,
         );
         setUnreadCount(0);
       } catch (error) {
@@ -257,8 +257,8 @@ const Header = () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       try {
         const res = await axios.get(
-          "http://localhost:5050/api/notifications",
-          config
+          "https://lexiverse-backend.onrender.com/api/notifications",
+          config,
         );
         setNotifications(res.data);
       } catch (error) {

@@ -221,8 +221,8 @@ const DashboardHome = () => {
                             c.status === "Resolved"
                               ? "bg-gray-200 text-gray-800"
                               : c.status === "Lawyer Engaged"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-blue-100 text-blue-800"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-blue-100 text-blue-800"
                           }`}
                         >
                           {c.status}

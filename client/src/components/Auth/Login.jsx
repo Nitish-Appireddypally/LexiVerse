@@ -15,11 +15,11 @@ const Login = () => {
     console.log(password);
     try {
       const response = await axios.post(
-        "http://localhost:5050/api/auth/login",
+        "https://lexiverse-backend.onrender.com/api/auth/login",
         {
           email,
           password,
-        }
+        },
       );
 
       const { token, user } = response.data;
@@ -45,7 +45,7 @@ const Login = () => {
     } catch (error) {
       console.error("Login failed");
       alert(
-        "Login Failed : " + (error.response?.data?.message || "Server error")
+        "Login Failed : " + (error.response?.data?.message || "Server error"),
       );
     }
   };

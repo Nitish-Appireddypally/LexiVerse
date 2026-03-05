@@ -60,7 +60,9 @@ const FeatureCards = () => {
           <div className="text-4xl bg-yellow-400 w-14 h-14 flex items-center justify-center rounded-full mb-4">
             {feature.icon}
           </div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-1">{feature.title}</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-1">
+            {feature.title}
+          </h2>
           <p className="text-sm text-gray-600">{feature.description}</p>
         </div>
       ))}

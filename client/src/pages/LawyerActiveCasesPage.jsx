@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import axios from 'axios';
-import LawyerSidebar from '../components/Dashboard/LawyerSidebar';
-import Header from '../components/Dashboard/Header';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import LawyerSidebar from "../components/Dashboard/LawyerSidebar";
+import Header from "../components/Dashboard/Header";
 
 const LawyerActiveCasesPage = () => {
   const [activeCases, setActiveCases] = useState([]);
@@ -12,16 +12,16 @@ const LawyerActiveCasesPage = () => {
     const fetchActiveCases = async () => {
       setIsLoading(true);
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const res = await axios.get(
-          'http://localhost:5050/api/lawyers/dashboard/active-cases',
+          "https://lexiverse-backend.onrender.com/api/lawyers/dashboard/active-cases",
           {
             headers: { Authorization: `Bearer ${token}` },
-          }
+          },
         );
         setActiveCases(res.data);
       } catch (error) {
-        console.error('Failed to fetch active cases.');
+        console.error("Failed to fetch active cases.");
       } finally {
         setIsLoading(false);
       }
@@ -32,16 +32,16 @@ const LawyerActiveCasesPage = () => {
   const getStatusBadge = (status) => {
     const lowerStatus = status.toLowerCase().replace("_", " ");
     switch (lowerStatus) {
-      case 'submitted':
-        return 'bg-blue-100 text-blue-800';
-      case 'fir filed':
-        return 'bg-indigo-100 text-indigo-800';
-      case 'in court':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'resolved':
-        return 'bg-green-100 text-green-800';
+      case "submitted":
+        return "bg-blue-100 text-blue-800";
+      case "fir filed":
+        return "bg-indigo-100 text-indigo-800";
+      case "in court":
+        return "bg-yellow-100 text-yellow-800";
+      case "resolved":
+        return "bg-green-100 text-green-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -62,7 +62,9 @@ const LawyerActiveCasesPage = () => {
 
           <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
             {isLoading ? (
-              <p className="p-4 text-center text-gray-500 text-sm">Loading...</p>
+              <p className="p-4 text-center text-gray-500 text-sm">
+                Loading...
+              </p>
             ) : (
               <table className="w-full text-left text-sm">
                 <thead className="bg-[#1F2937] text-white text-sm">
@@ -90,10 +92,10 @@ const LawyerActiveCasesPage = () => {
                         <td className="px-3 py-2">
                           <span
                             className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusBadge(
-                              caseItem.status
+                              caseItem.status,
                             )}`}
                           >
-                            {caseItem.status.replace('_', ' ')}
+                            {caseItem.status.replace("_", " ")}
                           </span>
                         </td>
                       </tr>
