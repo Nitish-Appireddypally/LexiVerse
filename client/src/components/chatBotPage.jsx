@@ -20,13 +20,14 @@
 
 // export default ChatbotPage;
 
-import React from 'react';
+import React from "react";
 import Sidebar from "./Dashboard/Sidebar";
 import Header from "./Dashboard/Header";
 
 const ChatbotPage = () => {
-  const streamlitAppUrl = "http://localhost:8501"; // The URL where your Streamlit app is running
+  const token = localStorage.getItem("token");
 
+  const streamlitAppUrl = `http://localhost:8501/?token=${token}`;
   return (
     <div className="flex bg-[#F9FAFB]">
       {/* Sidebar */}
@@ -43,7 +44,7 @@ const ChatbotPage = () => {
               src={streamlitAppUrl}
               width="100%"
               height="100%"
-              style={{ border: 'none', backgroundColor: 'white' }} // Removes the default iframe border
+              style={{ border: "none", backgroundColor: "white" }} // Removes the default iframe border
               title="LexiVerse AI Chatbot"
             />
           </div>

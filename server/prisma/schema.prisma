@@ -91,6 +91,7 @@ model User {
   cases_as_participant CaseParticipant[]
   chat_histories    ChatHistory[]
   notifications    Notification[] // 👈 ADD THIS LINE
+  ai_insights AIInsight[]
 
   @@map("users")
 }
@@ -244,4 +245,15 @@ model Notification {
   user    User @relation(fields: [user_id], references: [id])
 
   @@map("notifications")
+}
+
+model AIInsight {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  insight    Json
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("ai_insights")
 }

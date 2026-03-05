@@ -48,7 +48,14 @@
 
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaUserTie, FaFolderOpen, FaDollarSign, FaGavel } from "react-icons/fa";
+import {
+  FaHome,
+  FaUserTie,
+  FaFolderOpen,
+  FaDollarSign,
+  FaGavel,
+} from "react-icons/fa";
+import { GoLaw } from "react-icons/go";
 
 const menuItems = [
   { name: "Dashboard", icon: <FaHome />, route: "/lawyer/dashboard" },
@@ -62,8 +69,10 @@ const LawyerSidebar = () => {
   return (
     <div className="w-64 py-6 px-2 h-screen bg-[#1F2937] text-white shadow-xl flex flex-col border-r border-gray-700">
       {/* Logo */}
-      <div className="flex items-center justify-center h-20 text-2xl font-bold text-[#FBBF24] tracking-wider border-b border-gray-700">
-        LexiVerse
+      <div className="flex items-center justify-center gap-2 text-[#FBBF24] text-xl m-5 font-serif font-semibold tracking-wide select-none">
+        <GoLaw className="text-3xl" />
+        <span>LexiVerse</span>
+        <hr />
       </div>
 
       {/* Navigation */}
@@ -79,7 +88,7 @@ const LawyerSidebar = () => {
                   : "hover:bg-[#374151] text-gray-300"
               }`
             }
-            end={item.route.endsWith('dashboard')}
+            end={item.route.endsWith("dashboard")}
           >
             <span className="text-lg">{item.icon}</span>
             <span className="text-sm">{item.name}</span>

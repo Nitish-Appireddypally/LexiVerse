@@ -7,7 +7,6 @@
 // const caseRoutes = require("./routes/caseRoutes"); // Import the new case routes
 // const chatbotRoutes = require("./routes/chatbotRoutes"); // 👈 1. Import the new chatbot routes
 
-
 // const app = express();
 
 // // CORS Middleware
@@ -29,7 +28,6 @@
 // app.use("/api/auth", authRoutes);
 // app.use("/api/cases", caseRoutes); // Use the case routes
 // app.use("/api/chatbot", chatbotRoutes); // 👈 2. Use the chatbot routes
-
 
 // // Fallback - 404 Not Found (keep at the bottom)
 // app.use((req, res) => {
@@ -53,12 +51,13 @@ const chatbotRoutes = require("./routes/chatbotRoutes");
 const userRoutes = require("./routes/userRoutes"); // 👈 1. Import user routes
 const lawyerRoutes = require("./routes/lawyerRoutes"); // 👈 1. Import lawyer routes
 const notificationRoutes = require("./routes/notificationRoutes"); // 👈 1. Import notification routes
-
+const aiRoutes = require("./routes/aiRoutes");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api", aiRoutes);
 
 app.use((req, res, next) => {
   console.log(`[${req.method}] ${req.url}`);
@@ -76,8 +75,7 @@ app.use("/api/users", userRoutes); // 👈 2. Use user routes
 app.use("/api/lawyers", lawyerRoutes); // 👈 2. Use lawyer routes
 // app.use('/fir_documents', express.static(path.join(__dirname, 'fir_documents')));
 app.use("/api/notifications", notificationRoutes); // 👈 2. Use notification routes
-
-
+app.use("/api", aiRoutes);
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });

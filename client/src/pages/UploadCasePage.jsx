@@ -111,7 +111,7 @@ import FileCase from "../components/FileCase/FileCase";
 import SubmissionSuccess from "../components/FileCase/SubmissionSuccess";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios"; 
+import axios from "axios";
 
 const UploadCasePage = () => {
   const [formData, setFormData] = useState({
@@ -124,11 +124,97 @@ const UploadCasePage = () => {
   });
   const [submitted, setSubmitted] = useState(false);
 
+  // useEffect(() => {
+  //   const loadDraft = async () => {
+  //     try {
+  //       const token = localStorage.getItem("token");
+
+  //       // 1️⃣ Load saved local draft first
+  //       const savedDraft = localStorage.getItem("caseDraft");
+  //       if (savedDraft) {
+  //         setFormData(JSON.parse(savedDraft));
+  //         return;
+  //       }
+
+  //       // 2️⃣ Try loading AI insight
+  //       const res = await axios.get(
+  //         "http://localhost:5050/api/ai-insights/latest",
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         },
+  //       );
+
+  //       if (res.data?.insight) {
+  //         setFormData((prev) => ({
+  //           ...prev,
+  //           ...res.data.insight,
+  //         }));
+  //       }
+  //     } catch (error) {
+  //       console.log("No AI insight available");
+  //     }
+  //   };
+
+  //   loadDraft();
+  // }, []);
+
+  // useEffect(() => {
+  //   const fetchInsight = async () => {
+  //     const token = localStorage.getItem("token");
+
+  //     const res = await axios.get(
+  //       "http://localhost:5050/api/ai-insights/latest",
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       },
+  //     );
+
+  //     if (res.data?.insight) {
+  //       const ai = res.data.insight;
+
+  //       setFormData({
+  //         complainantDetails: {},
+  //         offenseDetails: ai.offenseDetails || {},
+  //         accusedPersons: ai.accusedPersons || [],
+  //         witnesses: ai.witnesses || [],
+  //         caseNarrative: ai.caseNarrative || {},
+  //         evidence: [],
+  //       });
+  //     }
+  //   };
+
+  //   fetchInsight();
+  // }, []);
+
   useEffect(() => {
-    const savedDraft = localStorage.getItem("caseDraft");
-    if (savedDraft) {
-      setFormData(JSON.parse(savedDraft));
-    }
+    const loadAIInsight = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5050/api/ai-insights/latest",
+        );
+
+        if (!response.data || !response.data.insight) return;
+
+        const ai = response.data.insight;
+
+        setFormData({
+          complainantDetails: {},
+          offenseDetails: ai.offenseDetails || {},
+          accusedPersons: ai.accusedPersons || [],
+          witnesses: ai.witnesses || [],
+          caseNarrative: ai.caseNarrative || {},
+          evidence: [],
+        });
+      } catch (error) {
+        console.error("AI insight load failed:", error);
+      }
+    };
+
+    loadAIInsight();
   }, []);
 
   const updateStepData = (stepKey, data) => {
@@ -140,7 +226,7 @@ const UploadCasePage = () => {
   // This is now the ONLY function that makes the API call
   const handleSubmit = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Authentication error. Please log in again.");
         return;
@@ -149,22 +235,28 @@ const UploadCasePage = () => {
       // We exclude the 'evidence' files array for now
       const { evidence, ...payload } = formData;
 
-      const response = await axios.post("http://localhost:5050/api/cases", payload, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
+      const response = await axios.post(
+        "http://localhost:5050/api/cases",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       console.log("Submitted case:", response.data);
       setSubmitted(true);
       toast.success("Your case has been submitted successfully!");
       localStorage.removeItem("caseDraft");
-
     } catch (error) {
       console.error("Submission failed:", error);
-      toast.error(error.response?.data?.message || "Something went wrong. Please try again.");
+      toast.error(
+        error.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      );
       // Re-throw the error so the child component knows to stop its loading spinner
-      throw error; 
+      throw error;
     }
   };
 
@@ -175,7 +267,7 @@ const UploadCasePage = () => {
 
       <div className="ml-64 flex-1 p-6 lg:p-8 overflow-y-auto">
         <Header />
-        
+
         <main className="mt-8">
           {submitted ? (
             <SubmissionSuccess />
@@ -186,7 +278,8 @@ const UploadCasePage = () => {
                   📝 File a New Case
                 </h1>
                 <p className="text-gray-600 mt-2">
-                  Please provide the following details accurately to generate a professional FIR draft.
+                  Please provide the following details accurately to generate a
+                  professional FIR draft.
                 </p>
               </div>
               <FileCase

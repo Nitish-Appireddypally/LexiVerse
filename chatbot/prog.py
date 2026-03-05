@@ -100,114 +100,145 @@
 #     # Add assistant response to chat history
 #     st.session_state.messages.append({"role": "assistant", "content": assistant_response})
 
-
 import streamlit as st
-from groq import Groq
-import os
+import requests
 from dotenv import load_dotenv
+import json
+import os
 
-# --- Page Configuration (MUST be the first Streamlit command) ---
-# Set the layout to "wide" to use the full screen width
+token = st.query_params.get("token")
+
+load_dotenv()
+
 st.set_page_config(layout="wide")
 
-# --- Custom CSS for a professional look ---
-# This will adjust padding, hide the Streamlit header/menu, and the "Deploy" button
 st.markdown("""
 <style>
-    
-    /* Reduce padding on the main app container */
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        padding-left: 2rem;
-        padding-right: 2rem;
-        
-        
-    }
-    /* Hide the default Streamlit header (contains hamburger menu) */
-    header {
-        visibility: hidden;
-    }
-    a {
-        visibility: hidden;
-    }
-    /* Hide the "Deploy" button */
-    .stDeployButton, {
-        visibility: hidden;
-    }
+.main .block-container {
+padding-top:2rem;
+padding-bottom:2rem;
+padding-left:2rem;
+padding-right:2rem;
+}
+header {visibility:hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-
-# --- Your Existing Chatbot Logic ---
-
-# Load environment variables
-load_dotenv()
-
-# Retrieve the Groq API key from environment variables
-API_KEY = os.getenv("API_KEY")
-
-if not API_KEY:
-    st.error("GROQ_API_KEY is not set. Please set it in your environment variables.")
-    st.stop()
-
-# Initialize the Groq client
-client = Groq(api_key=API_KEY)
-
-# Set the title with purple color
-st.markdown("<h1 style='color: purple;'>LexiVerse AI</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='color:purple;'>LexiVerse AI</h1>", unsafe_allow_html=True)
 st.write("Your AI-powered legal assistant.")
 
-# Initialize chat history in session state
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chat messages from history on app rerun
+if "structured_case" not in st.session_state:
+    st.session_state.structured_case = None
+
+
 for message in st.session_state.messages:
+
     with st.chat_message(message["role"]):
-        # Apply purple color to assistant messages
+
         if message["role"] == "assistant":
-            st.markdown(f"<p style='color: purple;'>{message['content']}</p>", unsafe_allow_html=True)
+            st.markdown(
+                f"<p style='color:purple;'>{message['content']}</p>",
+                unsafe_allow_html=True
+            )
         else:
             st.markdown(message["content"])
 
-# React to user input
+
 if prompt := st.chat_input("You:"):
-    # Display user message in chat message container
+
     with st.chat_message("user"):
         st.markdown(prompt)
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # --- START: UPDATED SYSTEM MESSAGE ---
-    # Define the system message with the new legal context (BNS 2023)
-    system_message = (
-        "You are LexiVerse AI, an expert legal assistant for India, fully updated with the latest laws. "
-        "The Indian Penal Code (IPC), 1860 has been replaced by the Bharatiya Nyaya Sanhita (BNS), 2023. "
-        "Your primary role is to provide legal information based ONLY on this new law. "
-        "When a user describes an injustice, you MUST cite the relevant sections from the Bharatiya Nyaya Sanhita (BNS). "
-        "If a user mentions an old IPC section, you must provide the corresponding new BNS section and clarify that the law has been updated. "
-        "YOU CAN PROVIDE LEGAL ADVICE. "
-        "Ask clarifying questions to understand the context. Your final advice must be concise, accurate, and based on the BNS."
-    )
-    # --- END: UPDATED SYSTEM MESSAGE ---
+    st.session_state.messages.append({
+        "role": "user",
+        "content": prompt
+    })
 
-    messages = [{"role": "system", "content": system_message}] + st.session_state.messages
+    history = [
+        {"role": m["role"], "content": m["content"]}
+        for m in st.session_state.messages[:-1]
+    ]
 
-    # Generate assistant response using Groq API
     try:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=messages,
-            temperature=0.7,
-            max_tokens=2000
+
+        res = requests.post(
+            "http://localhost:5001/chat",
+            json={
+                "prompt": prompt,
+                "history": history
+            },
+            timeout=20
         )
-        assistant_response = response.choices[0].message.content
+
+        if res.status_code == 200:
+
+            data = res.json()
+
+            assistant_response = data["response"]
+            structured = data["structured"]
+
+            if structured:
+
+                st.session_state.structured_case = structured
+
+                assistant_response = (
+        "✅ Case draft prepared successfully.\n\n"
+        "Review the information and proceed to file the case."
+    )
+
+        else:
+            assistant_response = f"Server Error: {res.text}"
+
     except Exception as e:
         assistant_response = f"API request failed: {e}"
 
-    # Display assistant response in chat message container
     with st.chat_message("assistant"):
-        st.markdown(f"<p style='color: purple;'>{assistant_response}</p>", unsafe_allow_html=True)
-    # Add assistant response to chat history
-    st.session_state.messages.append({"role": "assistant", "content": assistant_response})
+        st.markdown(
+            f"<p style='color:purple;'>{assistant_response}</p>",
+            unsafe_allow_html=True
+        )
+
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": assistant_response
+    })
+
+
+# ---------------------------
+# Proceed button
+# ---------------------------
+
+if st.session_state.structured_case:
+
+    st.divider()
+    st.subheader("Case Draft Ready")
+
+    if st.button("Proceed to File Case"):
+
+        try:
+
+            r = requests.post(
+                "http://localhost:5050/api/ai-insights",
+                json={"insight": st.session_state.structured_case},
+                headers={"Content-Type": "application/json"}
+            )
+
+            print("Backend response:", r.status_code, r.text)
+
+            if r.status_code == 201:
+
+                st.success("Case draft saved successfully!")
+
+                st.markdown(
+                    "[➡ Proceed to File Case](http://localhost:5173/upload-case)"
+                )
+
+            else:
+                st.error(f"Backend error: {r.status_code} {r.text}")
+
+        except Exception as e:
+            st.error(str(e))
