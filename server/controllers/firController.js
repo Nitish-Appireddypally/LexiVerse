@@ -407,9 +407,7 @@ const generateFirPdf = async (req, res) => {
     });
 
     if (!caseData) {
-      return res.status(404).json({
-        message: "Case not found or access denied",
-      });
+      return res.status(404).json({ message: "Case not found" });
     }
 
     const { complainant, offense, accused, witnesses } = caseData.full_details;
@@ -417,9 +415,7 @@ const generateFirPdf = async (req, res) => {
     const verificationId = `LX-${caseId}-${Date.now()}`;
 
     const qrData = `https://lexiverse.vercel.app/verify/${verificationId}`;
-
     const qrImage = await QRCode.toDataURL(qrData);
-
     const qrBuffer = Buffer.from(
       qrImage.replace(/^data:image\/png;base64,/, ""),
       "base64",
@@ -436,31 +432,37 @@ const generateFirPdf = async (req, res) => {
       "Content-Disposition",
       `attachment; filename=FIR-CASE-${caseId}.pdf`,
     );
-
     res.setHeader("Content-Type", "application/pdf");
 
     doc.pipe(res);
 
-    // WATERMARK
-    doc
-      .fillColor("#eeeeee")
-      .fontSize(60)
-      .rotate(-30, { origin: [300, 400] })
-      .text("LEXIVERSE", 120, 350, { align: "center" })
-      .rotate(30, { origin: [300, 400] });
+    const pageWidth = doc.page.width;
 
-    doc.fillColor("black");
+    /* WATERMARK */
+    doc.save();
+    doc.fillColor("#e5e5e5");
+    doc.fontSize(80);
+    doc.rotate(-30, { origin: [300, 400] });
+    doc.text("LEXIVERSE", 70, 350, { align: "center", width: 450 });
+    doc.restore();
 
-    // EMBLEM
+    /* EMBLEM */
     if (fs.existsSync(emblemPath)) {
-      doc.image(emblemPath, 260, 40, { width: 60 });
+      doc.image(emblemPath, pageWidth / 2 - 30, 40, { width: 60 });
     }
 
-    doc.moveDown(3);
+    /* HEADER */
+    doc.moveDown(5);
 
-    doc.fontSize(16).text("Government of India", { align: "center" });
+    doc.fontSize(16).text("Government of India", {
+      align: "center",
+    });
 
-    doc.fontSize(14).text("First Information Report", { align: "center" });
+    doc.moveDown(0.2);
+
+    doc.fontSize(14).text("First Information Report", {
+      align: "center",
+    });
 
     doc
       .fontSize(10)
@@ -468,14 +470,15 @@ const generateFirPdf = async (req, res) => {
         align: "center",
       });
 
-    doc.moveDown();
+    doc.moveDown(1);
 
     doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
 
-    doc.moveDown();
+    doc.moveDown(1);
+
+    /* FIR META DATA */
 
     doc.fontSize(11);
-
     doc.text(`FIR Number: FIR-${caseId}`);
     doc.text(`Verification ID: ${verificationId}`);
     doc.text(`Date: ${new Date().toLocaleDateString("en-IN")}`);
@@ -487,12 +490,13 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
+    /* COMPLAINANT */
+
     doc.fontSize(13).text("1. Complainant Details", { underline: true });
 
     doc.moveDown(0.5);
 
     doc.fontSize(11);
-
     doc.text(`Name: ${complainant.name}`);
     doc.text(`Father/Husband Name: ${complainant.fatherName}`);
     doc.text(`Address: ${complainant.address}`);
@@ -501,18 +505,21 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
+    /* OFFENSE */
+
     doc.fontSize(13).text("2. Offense Details", { underline: true });
 
     doc.moveDown(0.5);
 
     doc.fontSize(11);
-
     doc.text(`Date of Incident: ${offense.offenseDate}`);
-    doc.text(`Time: ${offense.offenseTime}`);
-    doc.text(`Place: ${offense.placeOfOffense}`);
+    doc.text(`Time of Incident: ${offense.offenseTime}`);
+    doc.text(`Place of Occurrence: ${offense.placeOfOffense}`);
     doc.text(`Nature of Offense: ${caseData.case_type}`);
 
     doc.moveDown();
+
+    /* ACCUSED */
 
     doc.fontSize(13).text("3. Accused Persons", { underline: true });
 
@@ -523,10 +530,12 @@ const generateFirPdf = async (req, res) => {
         doc.text(`${i + 1}. ${person.name} — ${person.address}`);
       });
     } else {
-      doc.text("Unknown / Not identified");
+      doc.text("Unknown / Not Identified");
     }
 
     doc.moveDown();
+
+    /* WITNESSES */
 
     doc.fontSize(13).text("4. Witnesses", { underline: true });
 
@@ -537,10 +546,12 @@ const generateFirPdf = async (req, res) => {
         doc.text(`${i + 1}. ${w.name} — ${w.address}`);
       });
     } else {
-      doc.text("No witnesses reported.");
+      doc.text("No witnesses reported");
     }
 
     doc.moveDown();
+
+    /* NARRATIVE */
 
     doc.fontSize(13).text("5. Narrative of Incident", { underline: true });
 
@@ -552,11 +563,15 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown(2);
 
+    /* QR CODE */
+
     doc.image(qrBuffer, 50, doc.y, { width: 80 });
 
     doc.fontSize(9).text("Scan to verify FIR authenticity", 50, doc.y + 85);
 
-    doc.moveDown(3);
+    /* SIGNATURE BLOCK */
+
+    doc.moveDown(2);
 
     doc.text("_________________________", 350);
     doc.text("Station House Officer", 350);
@@ -564,10 +579,12 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown(2);
 
+    /* FOOTER */
+
     doc
       .fontSize(9)
       .text(
-        `Generated digitally by LexiVerse | ${new Date().toLocaleDateString(
+        `Generated digitally by LexiVerse on ${new Date().toLocaleDateString(
           "en-IN",
         )}`,
         { align: "center" },
