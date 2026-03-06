@@ -390,12 +390,13 @@ const prisma = new PrismaClient();
 const PDFDocument = require("pdfkit");
 const QRCode = require("qrcode");
 const path = require("path");
+const fs = require("fs");
 
 const generateFirPdf = async (req, res) => {
-  const caseId = parseInt(req.params.id);
-  const userId = req.user.id;
-
   try {
+    const caseId = parseInt(req.params.id);
+    const userId = req.user.id;
+
     const caseData = await prisma.case.findFirst({
       where: {
         id: caseId,
@@ -407,17 +408,24 @@ const generateFirPdf = async (req, res) => {
 
     if (!caseData) {
       return res.status(404).json({
-        message: "Case not found or you do not have access.",
+        message: "Case not found or access denied",
       });
     }
 
     const { complainant, offense, accused, witnesses } = caseData.full_details;
 
-    const verificationId = `LEXI-${caseId}-${Date.now()}`;
+    const verificationId = `LX-${caseId}-${Date.now()}`;
 
-    const verificationUrl = `https://lexiverse-six.vercel.app/verify/${verificationId}`;
+    const qrData = `https://lexiverse.vercel.app/verify/${verificationId}`;
 
-    const qrImage = await QRCode.toDataURL(verificationUrl);
+    const qrImage = await QRCode.toDataURL(qrData);
+
+    const qrBuffer = Buffer.from(
+      qrImage.replace(/^data:image\/png;base64,/, ""),
+      "base64",
+    );
+
+    const emblemPath = path.join(__dirname, "../assets/police-emblem.png");
 
     const doc = new PDFDocument({
       size: "A4",
@@ -428,29 +436,27 @@ const generateFirPdf = async (req, res) => {
       "Content-Disposition",
       `attachment; filename=FIR-CASE-${caseId}.pdf`,
     );
+
     res.setHeader("Content-Type", "application/pdf");
 
     doc.pipe(res);
 
-    const emblemPath = path.join(__dirname, "../assets/police-emblem.png");
-
-    // ===== WATERMARK =====
-
-    doc.save();
-    doc.rotate(-45, { origin: [300, 400] });
-    doc.fontSize(80).fillColor("#eeeeee");
-    doc.text("LEXIVERSE", 120, 350);
-    doc.restore();
+    // WATERMARK
+    doc
+      .fillColor("#eeeeee")
+      .fontSize(60)
+      .rotate(-30, { origin: [300, 400] })
+      .text("LEXIVERSE", 120, 350, { align: "center" })
+      .rotate(30, { origin: [300, 400] });
 
     doc.fillColor("black");
 
-    // ===== EMBLEM =====
+    // EMBLEM
+    if (fs.existsSync(emblemPath)) {
+      doc.image(emblemPath, 260, 40, { width: 60 });
+    }
 
-    doc.image(emblemPath, 260, 40, { width: 60 });
-
-    doc.moveDown(4);
-
-    // ===== HEADER =====
+    doc.moveDown(3);
 
     doc.fontSize(16).text("Government of India", { align: "center" });
 
@@ -468,13 +474,11 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
-    // ===== FIR DETAILS =====
-
     doc.fontSize(11);
 
     doc.text(`FIR Number: FIR-${caseId}`);
     doc.text(`Verification ID: ${verificationId}`);
-    doc.text(`Date of Report: ${new Date().toLocaleDateString("en-IN")}`);
+    doc.text(`Date: ${new Date().toLocaleDateString("en-IN")}`);
     doc.text(`Police Station: Metro Police Station, Hyderabad`);
 
     doc.moveDown();
@@ -482,8 +486,6 @@ const generateFirPdf = async (req, res) => {
     doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
 
     doc.moveDown();
-
-    // ===== COMPLAINANT =====
 
     doc.fontSize(13).text("1. Complainant Details", { underline: true });
 
@@ -499,8 +501,6 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
-    // ===== OFFENSE =====
-
     doc.fontSize(13).text("2. Offense Details", { underline: true });
 
     doc.moveDown(0.5);
@@ -508,37 +508,29 @@ const generateFirPdf = async (req, res) => {
     doc.fontSize(11);
 
     doc.text(`Date of Incident: ${offense.offenseDate}`);
-    doc.text(`Time of Incident: ${offense.offenseTime}`);
-    doc.text(`Place of Occurrence: ${offense.placeOfOffense}`);
+    doc.text(`Time: ${offense.offenseTime}`);
+    doc.text(`Place: ${offense.placeOfOffense}`);
     doc.text(`Nature of Offense: ${caseData.case_type}`);
 
     doc.moveDown();
 
-    // ===== ACCUSED =====
-
     doc.fontSize(13).text("3. Accused Persons", { underline: true });
 
     doc.moveDown(0.5);
-
-    doc.fontSize(11);
 
     if (accused?.length) {
       accused.forEach((person, i) => {
         doc.text(`${i + 1}. ${person.name} — ${person.address}`);
       });
     } else {
-      doc.text("Unknown / Not Identified");
+      doc.text("Unknown / Not identified");
     }
 
     doc.moveDown();
 
-    // ===== WITNESSES =====
-
     doc.fontSize(13).text("4. Witnesses", { underline: true });
 
     doc.moveDown(0.5);
-
-    doc.fontSize(11);
 
     if (witnesses?.length) {
       witnesses.forEach((w, i) => {
@@ -550,8 +542,6 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
-    // ===== NARRATIVE =====
-
     doc.fontSize(13).text("5. Narrative of Incident", { underline: true });
 
     doc.moveDown(0.5);
@@ -560,45 +550,38 @@ const generateFirPdf = async (req, res) => {
       align: "justify",
     });
 
-    doc.moveDown(3);
-
-    // ===== QR CODE =====
-
-    const qrBuffer = Buffer.from(qrImage.split(",")[1], "base64");
+    doc.moveDown(2);
 
     doc.image(qrBuffer, 50, doc.y, { width: 80 });
 
-    doc
-      .fontSize(9)
-      .text(
-        "Scan QR code to verify this FIR on LexiVerse platform.",
-        50,
-        doc.y + 85,
-      );
+    doc.fontSize(9).text("Scan to verify FIR authenticity", 50, doc.y + 85);
 
-    // ===== SIGNATURE =====
+    doc.moveDown(3);
 
-    doc.text("_________________________", 360);
-    doc.text("Station House Officer", 360);
-    doc.text("Metro Police Station", 360);
+    doc.text("_________________________", 350);
+    doc.text("Station House Officer", 350);
+    doc.text("Metro Police Station", 350);
 
     doc.moveDown(2);
 
-    // ===== FOOTER =====
-
     doc
       .fontSize(9)
       .text(
-        `Generated digitally by LexiVerse Legal Platform | Verification ID: ${verificationId}`,
+        `Generated digitally by LexiVerse | ${new Date().toLocaleDateString(
+          "en-IN",
+        )}`,
         { align: "center" },
       );
 
     doc.end();
   } catch (error) {
-    console.error("Error generating FIR:", error);
-    res.status(500).json({
-      message: "Server error while generating FIR.",
-    });
+    console.error("FIR generation error:", error);
+
+    if (!res.headersSent) {
+      res.status(500).json({
+        message: "Error generating FIR",
+      });
+    }
   }
 };
 
