@@ -446,7 +446,8 @@ const generateFirPdf = async (req, res) => {
       doc.image(emblemPath, 270, 40, { width: 50 });
     }
 
-    doc.moveDown(3);
+    // Move content start below emblem
+    doc.y = 120;
 
     doc.fontSize(16).text("Government of India", { align: "center" });
 
