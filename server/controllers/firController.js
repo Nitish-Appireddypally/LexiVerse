@@ -593,6 +593,68 @@ const generateFirPdf = async (req, res) => {
   }
 };
 
+const updateInvestigationDetails = async (req, res) => {
+  const caseId = parseInt(req.params.id);
+  const user = req.user;
+
+  const {
+    fir_number,
+    police_station,
+    investigating_officer,
+    io_contact,
+    status,
+  } = req.body;
+
+  try {
+    const caseData = await prisma.case.findFirst({
+      where: {
+        id: caseId,
+        participants: {
+          some: { user_id: user.id },
+        },
+      },
+    });
+
+    if (user.role !== "Admin" && !caseData) {
+      return res.status(403).json({
+        message: "Forbidden: You do not have access",
+      });
+    }
+
+    const [, updatedCase] = await prisma.$transaction([
+      prisma.fIR.upsert({
+        where: { case_id: caseId },
+        update: {
+          fir_number,
+          police_station,
+          investigating_officer,
+          io_contact,
+        },
+        create: {
+          case_id: caseId,
+          fir_number,
+          police_station,
+          investigating_officer,
+          io_contact,
+        },
+      }),
+
+      prisma.case.update({
+        where: { id: caseId },
+        data: { status },
+      }),
+    ]);
+
+    res.status(200).json(updatedCase);
+  } catch (error) {
+    console.error("Error updating investigation details:", error);
+    res.status(500).json({
+      message: "Server error while updating details.",
+    });
+  }
+};
+
 module.exports = {
   generateFirPdf,
+  updateInvestigationDetails,
 };
