@@ -388,6 +388,8 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const PDFDocument = require("pdfkit");
+const QRCode = require("qrcode");
+const path = require("path");
 
 const generateFirPdf = async (req, res) => {
   const caseId = parseInt(req.params.id);
@@ -411,7 +413,16 @@ const generateFirPdf = async (req, res) => {
 
     const { complainant, offense, accused, witnesses } = caseData.full_details;
 
-    const doc = new PDFDocument({ margin: 50 });
+    const verificationId = `LEXI-${caseId}-${Date.now()}`;
+
+    const verificationUrl = `https://lexiverse-six.vercel.app/verify/${verificationId}`;
+
+    const qrImage = await QRCode.toDataURL(verificationUrl);
+
+    const doc = new PDFDocument({
+      size: "A4",
+      margin: 50,
+    });
 
     res.setHeader(
       "Content-Disposition",
@@ -421,22 +432,65 @@ const generateFirPdf = async (req, res) => {
 
     doc.pipe(res);
 
-    // Title
-    doc.fontSize(20).text("FIRST INFORMATION REPORT", { align: "center" });
+    const emblemPath = path.join(__dirname, "../assets/police-emblem.png");
+
+    // ===== WATERMARK =====
+
+    doc.save();
+    doc.rotate(-45, { origin: [300, 400] });
+    doc.fontSize(80).fillColor("#eeeeee");
+    doc.text("LEXIVERSE", 120, 350);
+    doc.restore();
+
+    doc.fillColor("black");
+
+    // ===== EMBLEM =====
+
+    doc.image(emblemPath, 260, 40, { width: 60 });
+
+    doc.moveDown(4);
+
+    // ===== HEADER =====
+
+    doc.fontSize(16).text("Government of India", { align: "center" });
+
+    doc.fontSize(14).text("First Information Report", { align: "center" });
 
     doc
-      .fontSize(12)
+      .fontSize(10)
       .text("(Under Section 154 of the Code of Criminal Procedure, 1973)", {
         align: "center",
       });
 
     doc.moveDown();
 
-    // Complainant
-    doc.fontSize(16).text("1. Complainant Details");
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+
+    doc.moveDown();
+
+    // ===== FIR DETAILS =====
+
+    doc.fontSize(11);
+
+    doc.text(`FIR Number: FIR-${caseId}`);
+    doc.text(`Verification ID: ${verificationId}`);
+    doc.text(`Date of Report: ${new Date().toLocaleDateString("en-IN")}`);
+    doc.text(`Police Station: Metro Police Station, Hyderabad`);
+
+    doc.moveDown();
+
+    doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
+
+    doc.moveDown();
+
+    // ===== COMPLAINANT =====
+
+    doc.fontSize(13).text("1. Complainant Details", { underline: true });
+
     doc.moveDown(0.5);
 
-    doc.fontSize(12);
+    doc.fontSize(11);
+
     doc.text(`Name: ${complainant.name}`);
     doc.text(`Father/Husband Name: ${complainant.fatherName}`);
     doc.text(`Address: ${complainant.address}`);
@@ -445,64 +499,101 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
-    // Offense
-    doc.fontSize(16).text("2. Offense Details");
+    // ===== OFFENSE =====
+
+    doc.fontSize(13).text("2. Offense Details", { underline: true });
+
     doc.moveDown(0.5);
 
-    doc.fontSize(12);
-    doc.text(`Date: ${offense.offenseDate}`);
-    doc.text(`Time: ${offense.offenseTime}`);
-    doc.text(`Place: ${offense.placeOfOffense}`);
-    doc.text(`Case Type: ${caseData.case_type}`);
+    doc.fontSize(11);
+
+    doc.text(`Date of Incident: ${offense.offenseDate}`);
+    doc.text(`Time of Incident: ${offense.offenseTime}`);
+    doc.text(`Place of Occurrence: ${offense.placeOfOffense}`);
+    doc.text(`Nature of Offense: ${caseData.case_type}`);
 
     doc.moveDown();
 
-    // Accused
-    doc.fontSize(16).text("3. Accused Persons");
+    // ===== ACCUSED =====
+
+    doc.fontSize(13).text("3. Accused Persons", { underline: true });
+
     doc.moveDown(0.5);
 
+    doc.fontSize(11);
+
     if (accused?.length) {
-      accused.forEach((a, i) => {
-        doc.text(`${i + 1}. ${a.name} - ${a.address}`);
+      accused.forEach((person, i) => {
+        doc.text(`${i + 1}. ${person.name} — ${person.address}`);
       });
     } else {
-      doc.text("No accused mentioned.");
+      doc.text("Unknown / Not Identified");
     }
 
     doc.moveDown();
 
-    // Witness
-    doc.fontSize(16).text("4. Witnesses");
+    // ===== WITNESSES =====
+
+    doc.fontSize(13).text("4. Witnesses", { underline: true });
+
     doc.moveDown(0.5);
+
+    doc.fontSize(11);
 
     if (witnesses?.length) {
       witnesses.forEach((w, i) => {
-        doc.text(`${i + 1}. ${w.name} - ${w.address}`);
+        doc.text(`${i + 1}. ${w.name} — ${w.address}`);
       });
     } else {
-      doc.text("No witnesses mentioned.");
+      doc.text("No witnesses reported.");
     }
 
     doc.moveDown();
 
-    // Narrative
-    doc.fontSize(16).text("5. Narrative of Incident");
+    // ===== NARRATIVE =====
+
+    doc.fontSize(13).text("5. Narrative of Incident", { underline: true });
+
     doc.moveDown(0.5);
 
-    doc.fontSize(12).text(caseData.description);
+    doc.fontSize(11).text(caseData.description, {
+      align: "justify",
+    });
 
-    doc.moveDown();
+    doc.moveDown(3);
+
+    // ===== QR CODE =====
+
+    const qrBuffer = Buffer.from(qrImage.split(",")[1], "base64");
+
+    doc.image(qrBuffer, 50, doc.y, { width: 80 });
 
     doc
-      .fontSize(10)
+      .fontSize(9)
       .text(
-        `Generated by LexiVerse on ${new Date().toLocaleDateString("en-IN")}`,
+        "Scan QR code to verify this FIR on LexiVerse platform.",
+        50,
+        doc.y + 85,
+      );
+
+    // ===== SIGNATURE =====
+
+    doc.text("_________________________", 360);
+    doc.text("Station House Officer", 360);
+    doc.text("Metro Police Station", 360);
+
+    doc.moveDown(2);
+
+    // ===== FOOTER =====
+
+    doc
+      .fontSize(9)
+      .text(
+        `Generated digitally by LexiVerse Legal Platform | Verification ID: ${verificationId}`,
         { align: "center" },
       );
 
     doc.end();
-
-    console.log(`✅ FIR generated for case ${caseId}`);
   } catch (error) {
     console.error("Error generating FIR:", error);
     res.status(500).json({
@@ -510,6 +601,7 @@ const generateFirPdf = async (req, res) => {
     });
   }
 };
+
 const updateInvestigationDetails = async (req, res) => {
   const caseId = parseInt(req.params.id);
   const user = req.user;
@@ -570,6 +662,7 @@ const updateInvestigationDetails = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   generateFirPdf,
   updateInvestigationDetails,
