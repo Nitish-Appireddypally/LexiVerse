@@ -335,11 +335,9 @@ const updateInvestigationDetails = async (req, res) => {
     });
 
     if (user.role !== "Admin" && !caseData) {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: You do not have access to update this case.",
-        });
+      return res.status(403).json({
+        message: "Forbidden: You do not have access to update this case.",
+      });
     }
 
     // Use a transaction to update both the case status and the FIR details together
