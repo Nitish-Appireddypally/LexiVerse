@@ -25,7 +25,7 @@
     "groq-sdk": "^0.19.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.14.1",
-    "puppeteer": "^24.22.3"
+    "puppeteer": "^24.38.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.9",
