@@ -166,7 +166,7 @@ if prompt := st.chat_input("You:"):
     try:
 
         res = requests.post(
-            "http://localhost:5001/chat",
+            "https://lexiverse-chatbot.onrender.com/chat",
             json={
                 "prompt": prompt,
                 "history": history
@@ -222,7 +222,7 @@ if st.session_state.structured_case:
         try:
 
             r = requests.post(
-                "http://localhost:5050/api/ai-insights",
+                "https://lexiverse-backend.onrender.com/api/ai-insights",
                 json={"insight": st.session_state.structured_case},
                 headers={"Content-Type": "application/json"}
             )
@@ -234,7 +234,7 @@ if st.session_state.structured_case:
                 st.success("Case draft saved successfully!")
 
                 st.markdown(
-                    "[➡ Proceed to File Case](http://localhost:5173/upload-case)"
+                    "[➡ Proceed to File Case](https://lexi-verse-six.vercel.app/upload-case)"
                 )
 
             else:
