@@ -407,7 +407,9 @@ const generateFirPdf = async (req, res) => {
     });
 
     if (!caseData) {
-      return res.status(404).json({ message: "Case not found" });
+      return res.status(404).json({
+        message: "Case not found or access denied",
+      });
     }
 
     const { complainant, offense, accused, witnesses } = caseData.full_details;
@@ -416,6 +418,7 @@ const generateFirPdf = async (req, res) => {
 
     const qrData = `https://lexiverse.vercel.app/verify/${verificationId}`;
     const qrImage = await QRCode.toDataURL(qrData);
+
     const qrBuffer = Buffer.from(
       qrImage.replace(/^data:image\/png;base64,/, ""),
       "base64",
@@ -432,37 +435,24 @@ const generateFirPdf = async (req, res) => {
       "Content-Disposition",
       `attachment; filename=FIR-CASE-${caseId}.pdf`,
     );
+
     res.setHeader("Content-Type", "application/pdf");
 
     doc.pipe(res);
 
-    const pageWidth = doc.page.width;
+    /* ===== HEADER ===== */
 
-    /* WATERMARK */
-    doc.save();
-    doc.fillColor("#e5e5e5");
-    doc.fontSize(80);
-    doc.rotate(-30, { origin: [300, 400] });
-    doc.text("LEXIVERSE", 70, 350, { align: "center", width: 450 });
-    doc.restore();
-
-    /* EMBLEM */
     if (fs.existsSync(emblemPath)) {
-      doc.image(emblemPath, pageWidth / 2 - 30, 40, { width: 60 });
+      doc.image(emblemPath, 270, 40, { width: 50 });
     }
 
-    /* HEADER */
-    doc.moveDown(5);
+    doc.moveDown(3);
 
-    doc.fontSize(16).text("Government of India", {
-      align: "center",
-    });
+    doc.fontSize(16).text("Government of India", { align: "center" });
 
-    doc.moveDown(0.2);
+    doc.moveDown(0.3);
 
-    doc.fontSize(14).text("First Information Report", {
-      align: "center",
-    });
+    doc.fontSize(14).text("First Information Report", { align: "center" });
 
     doc
       .fontSize(10)
@@ -474,14 +464,15 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveTo(50, doc.y).lineTo(545, doc.y).stroke();
 
-    doc.moveDown(1);
+    doc.moveDown();
 
-    /* FIR META DATA */
+    /* ===== FIR DETAILS ===== */
 
     doc.fontSize(11);
+
     doc.text(`FIR Number: FIR-${caseId}`);
     doc.text(`Verification ID: ${verificationId}`);
-    doc.text(`Date: ${new Date().toLocaleDateString("en-IN")}`);
+    doc.text(`Date of Report: ${new Date().toLocaleDateString("en-IN")}`);
     doc.text(`Police Station: Metro Police Station, Hyderabad`);
 
     doc.moveDown();
@@ -490,7 +481,7 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
-    /* COMPLAINANT */
+    /* ===== COMPLAINANT ===== */
 
     doc.fontSize(13).text("1. Complainant Details", { underline: true });
 
@@ -505,7 +496,7 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
-    /* OFFENSE */
+    /* ===== OFFENSE ===== */
 
     doc.fontSize(13).text("2. Offense Details", { underline: true });
 
@@ -519,7 +510,7 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
-    /* ACCUSED */
+    /* ===== ACCUSED ===== */
 
     doc.fontSize(13).text("3. Accused Persons", { underline: true });
 
@@ -535,7 +526,7 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown();
 
-    /* WITNESSES */
+    /* ===== WITNESSES ===== */
 
     doc.fontSize(13).text("4. Witnesses", { underline: true });
 
@@ -546,12 +537,12 @@ const generateFirPdf = async (req, res) => {
         doc.text(`${i + 1}. ${w.name} — ${w.address}`);
       });
     } else {
-      doc.text("No witnesses reported");
+      doc.text("No witnesses reported.");
     }
 
     doc.moveDown();
 
-    /* NARRATIVE */
+    /* ===== INCIDENT ===== */
 
     doc.fontSize(13).text("5. Narrative of Incident", { underline: true });
 
@@ -563,13 +554,13 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown(2);
 
-    /* QR CODE */
+    /* ===== QR CODE ===== */
 
     doc.image(qrBuffer, 50, doc.y, { width: 80 });
 
     doc.fontSize(9).text("Scan to verify FIR authenticity", 50, doc.y + 85);
 
-    /* SIGNATURE BLOCK */
+    /* ===== SIGNATURE ===== */
 
     doc.moveDown(2);
 
@@ -579,7 +570,7 @@ const generateFirPdf = async (req, res) => {
 
     doc.moveDown(2);
 
-    /* FOOTER */
+    /* ===== FOOTER ===== */
 
     doc
       .fontSize(9)
@@ -602,68 +593,6 @@ const generateFirPdf = async (req, res) => {
   }
 };
 
-const updateInvestigationDetails = async (req, res) => {
-  const caseId = parseInt(req.params.id);
-  const user = req.user;
-
-  const {
-    fir_number,
-    police_station,
-    investigating_officer,
-    io_contact,
-    status,
-  } = req.body;
-
-  try {
-    const caseData = await prisma.case.findFirst({
-      where: {
-        id: caseId,
-        participants: {
-          some: { user_id: user.id },
-        },
-      },
-    });
-
-    if (user.role !== "Admin" && !caseData) {
-      return res.status(403).json({
-        message: "Forbidden: You do not have access",
-      });
-    }
-
-    const [, updatedCase] = await prisma.$transaction([
-      prisma.fIR.upsert({
-        where: { case_id: caseId },
-        update: {
-          fir_number,
-          police_station,
-          investigating_officer,
-          io_contact,
-        },
-        create: {
-          case_id: caseId,
-          fir_number,
-          police_station,
-          investigating_officer,
-          io_contact,
-        },
-      }),
-
-      prisma.case.update({
-        where: { id: caseId },
-        data: { status },
-      }),
-    ]);
-
-    res.status(200).json(updatedCase);
-  } catch (error) {
-    console.error("Error updating investigation details:", error);
-    res.status(500).json({
-      message: "Server error while updating details.",
-    });
-  }
-};
-
 module.exports = {
   generateFirPdf,
-  updateInvestigationDetails,
 };
