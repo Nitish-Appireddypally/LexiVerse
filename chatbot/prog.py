@@ -171,7 +171,7 @@ if prompt := st.chat_input("You:"):
                 "prompt": prompt,
                 "history": history
             },
-            timeout=20
+            timeout=60
         )
 
         if res.status_code == 200:
